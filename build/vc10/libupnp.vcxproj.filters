@@ -154,9 +154,6 @@
     <ClInclude Include="..\..\upnp\inc\ActionRequest.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\autoconfig.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\upnp\inc\Callback.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -280,9 +277,6 @@
     <ClInclude Include="..\..\upnp\src\inc\upnpapi.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\upnpconfig.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\upnp\inc\upnpdebug.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -323,6 +317,12 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\upnp\src\inc\webserver.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\msvc\upnpconfig.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\msvc\autoconfig.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>

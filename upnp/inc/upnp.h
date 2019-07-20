@@ -930,7 +930,7 @@ typedef int (*Upnp_FunPtr)(
 	/*! [in] .*/
 	Upnp_EventType EventType,
 	/*! [in] .*/
-	void *Event,
+	const void *Event,
 	/*! [in] .*/
 	void *Cookie);
 
@@ -1019,7 +1019,6 @@ EXPORT_SPEC int UpnpInit(
  *     \li \c UPNP_E_INVALID_INTERFACE: IfName is invalid or does not
  *             have a valid IPv4 or IPv6 addresss configured.
  */
-#ifdef UPNP_ENABLE_IPV6
 EXPORT_SPEC int UpnpInit2( 
 	/*! The interface name to use by the UPnP SDK operations.
 	 * Examples: "eth0", "xl0", "Local Area Connection", \c NULL to
@@ -1028,7 +1027,6 @@ EXPORT_SPEC int UpnpInit2(
 	/*!  Local Port to listen for incoming connections.
 	 * \c NULL will pick an arbitrary free port. */
 	unsigned short DestPort);
-#endif
 
 /*!
  * \brief Terminates the Linux SDK for UPnP Devices.

@@ -327,7 +327,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\pthreads\;..\..\pthreads\lib\$(Platform);$(OutDir)..\lib\ixml;$(OutDir)..\lib\threadutil;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(IntDir)$(ProjectName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -389,7 +389,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>..\..\pthreads\;..\..\pthreads\lib\$(Platform);$(OutDir)..\lib\ixml;$(OutDir)..\lib\threadutil;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(OutDir)$(ProjectName).pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(IntDir)$(ProjectName).pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
@@ -630,7 +630,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\upnp\inc\ActionComplete.h" />
     <ClInclude Include="..\..\upnp\inc\ActionRequest.h" />
-    <ClInclude Include="..\inc\autoconfig.h" />
+    <ClInclude Include="..\msvc\autoconfig.h" />
     <ClInclude Include="..\..\upnp\inc\Callback.h" />
     <ClInclude Include="..\..\upnp\src\inc\client_table.h" />
     <ClInclude Include="..\..\upnp\src\inc\config.h" />
@@ -672,7 +672,7 @@
     <ClInclude Include="..\..\upnp\inc\upnp.h" />
     <ClInclude Include="..\..\upnp\src\inc\upnp_timeout.h" />
     <ClInclude Include="..\..\upnp\src\inc\upnpapi.h" />
-    <ClInclude Include="..\inc\upnpconfig.h" />
+    <ClInclude Include="..\msvc\upnpconfig.h" />
     <ClInclude Include="..\..\upnp\inc\upnpdebug.h" />
     <ClInclude Include="..\..\upnp\inc\UpnpGlobal.h" />
     <ClInclude Include="..\..\upnp\inc\UpnpInet.h" />
