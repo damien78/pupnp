@@ -59,7 +59,9 @@
 
 #ifdef WIN32
 #include <string.h>
+#if !defined(snprintf)
 #define snprintf _snprintf
+#endif
 #endif /* WIN32 */
 
 /*!
@@ -332,11 +334,11 @@ static int CreateClientRequestPacket(
 
 	switch (AddressFamily) {
 	case AF_INET:
-		rc = snprintf(TempBuf, sizeof(TempBuf), "HOST: %s:%d\r\n", SSDP_IP,
+		rc = snprintf(TempBuf, sizeof(TempBuf), "Host: %s:%d\r\n", SSDP_IP,
 			SSDP_PORT);
 		break;
 	case AF_INET6:
-		rc = snprintf(TempBuf, sizeof(TempBuf), "HOST: [%s]:%d\r\n",
+		rc = snprintf(TempBuf, sizeof(TempBuf), "Host: [%s]:%d\r\n",
 			SSDP_IPV6_LINKLOCAL, SSDP_PORT);
 		break;
 	default:
@@ -404,11 +406,11 @@ static int CreateClientRequestPacketUlaGua(
 	strcpy(RqstBuf, command);
 	switch (AddressFamily) {
 	case AF_INET:
-		rc = snprintf(TempBuf, sizeof(TempBuf), "HOST: %s:%d\r\n", SSDP_IP,
+		rc = snprintf(TempBuf, sizeof(TempBuf), "Host: %s:%d\r\n", SSDP_IP,
 			SSDP_PORT);
 		break;
 	case AF_INET6:
-		rc = snprintf(TempBuf, sizeof(TempBuf), "HOST: [%s]:%d\r\n",
+		rc = snprintf(TempBuf, sizeof(TempBuf), "Host: [%s]:%d\r\n",
 			SSDP_IPV6_SITELOCAL, SSDP_PORT);
 		break;
 	default:

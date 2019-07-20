@@ -51,7 +51,7 @@
 #include <assert.h>
 #include <string.h>
 
-#ifdef WIN32
+#if defined(WIN32) && !defined(snprintf)
 	#define snprintf _snprintf
 #endif
 
@@ -199,7 +199,7 @@ static UPNP_INLINE void send_var_query_response(
 			HTTP_OK,
 			content_length,
 			ContentTypeHeader,
-			"EXT:\r\n",
+			"Ext:\r\n",
 			X_USER_AGENT,
 			start_body, var_value, end_body) != 0) {
 		membuffer_destroy(&response);
@@ -255,7 +255,7 @@ static UPNP_INLINE void send_action_response(
 			HTTP_OK,	/* status code */
 			content_length,
 			ContentTypeHeader,
-			"EXT:\r\n", X_USER_AGENT) != 0) {
+			"Ext:\r\n", X_USER_AGENT) != 0) {
 		goto error_handler;
 	}
 	/* send whole msg */
@@ -503,7 +503,7 @@ static int get_mpost_acton_hdrval(
 	if (membuffer_assign(&soap_action_name,
 		ns_value.buf, ns_value.length) == UPNP_E_OUTOF_MEMORY ||
 	    membuffer_append_str(&soap_action_name,
-		"-SOAPACTION") == UPNP_E_OUTOF_MEMORY) {
+		"-SOAPAction") == UPNP_E_OUTOF_MEMORY) {
 		membuffer_destroy(&soap_action_name);
 		return UPNP_E_OUTOF_MEMORY;
 	}

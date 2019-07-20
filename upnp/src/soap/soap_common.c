@@ -7,7 +7,7 @@
 #include "soaplib.h"
 
 const char *ContentTypeHeader =
-    "CONTENT-TYPE: text/xml; charset=\"utf-8\"\r\n";
+    "Content-Type: text/xml; charset=\"utf-8\"\r\n";
 
 #endif /* EXCLUDE_SOAP */
 

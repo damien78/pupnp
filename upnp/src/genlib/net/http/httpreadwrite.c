@@ -1662,18 +1662,17 @@ int http_MakeMessage(membuffer *buf, int http_major_version,
 			struct Extra_Headers *extras;
 			/* array of extra headers */
 			extras = (struct Extra_Headers *) va_arg(argp, struct Extra_Headers *);
-			if (extras) {
-				while (extras->name) {
-					if (extras->resp) {
-						if (membuffer_append(buf, extras->resp, strlen(extras->resp)))
-							goto error_handler;
-						if (membuffer_append(buf, "\r\n", (size_t)2))
-							goto error_handler;
-					}
-					extras++;
+			while (extras->name) {
+				if (extras->resp) {
+					if (membuffer_append(buf, extras->resp, strlen(extras->resp)))
+						goto error_handler;
+					if (membuffer_append(buf, "\r\n", (size_t)2))
+						goto error_handler;
 				}
+				extras++;
 			}
-		} else if (c == 's') {
+		}
+		if (c == 's') {
 			/* C string */
 			s = (char *)va_arg(argp, char *);
 			assert(s);
@@ -1683,7 +1682,7 @@ int http_MakeMessage(membuffer *buf, int http_major_version,
 				goto error_handler;
 		} else if (c == 'K') {
 			/* Add Chunky header */
-			if (membuffer_append(buf, "TRANSFER-ENCODING: chunked\r\n",
+			if (membuffer_append(buf, "Transfer-Encoding: chunked\r\n",
 				strlen("Transfer-Encoding: chunked\r\n")))
 				goto error_handler;
 		} else if (c == 'G') {
@@ -1728,7 +1727,7 @@ int http_MakeMessage(membuffer *buf, int http_major_version,
 			/* date */
 			if (c == 'D') {
 				/* header */
-				start_str = "DATE: ";
+				start_str = "Date: ";
 				end_str = "\r\n";
 				curr_time = time(NULL);
 				loc_time = &curr_time;
@@ -1761,7 +1760,7 @@ int http_MakeMessage(membuffer *buf, int http_major_version,
 			    strcmp(WEB_SERVER_CONTENT_LANGUAGE, "") &&
 			    http_MakeMessage(buf, http_major_version,
 					http_minor_version, "ssc",
-					"CONTENT-LANGUAGE: ",
+					"Content-Language: ",
 					WEB_SERVER_CONTENT_LANGUAGE) != 0)
 				goto error_handler;
 		} else if (c == 'C') {
@@ -1769,7 +1768,7 @@ int http_MakeMessage(membuffer *buf, int http_major_version,
 			    (http_major_version == 1 && http_minor_version == 1)
 			    ) {
 				/* connection header */
-				if (membuffer_append_str(buf, "CONNECTION: close\r\n"))
+				if (membuffer_append_str(buf, "Connection: close\r\n"))
 					goto error_handler;
 			}
 		} else if (c == 'N') {
@@ -1777,7 +1776,7 @@ int http_MakeMessage(membuffer *buf, int http_major_version,
 			bignum = (off_t) va_arg(argp, off_t);
 			assert(bignum >= 0);
 			if (http_MakeMessage(buf, http_major_version, http_minor_version,
-					     "shc", "CONTENT-LENGTH: ", bignum) != 0)
+					     "shc", "Content-Length: ", bignum) != 0)
 				goto error_handler;
 			/* Add accept ranges */
 			if (http_MakeMessage(buf, http_major_version, http_minor_version,
@@ -1785,7 +1784,7 @@ int http_MakeMessage(membuffer *buf, int http_major_version,
 				goto error_handler;
 		} else if (c == 'S' || c == 'U') {
 			/* SERVER or USER-AGENT header */
-			temp_str = (c == 'S') ? "SERVER: " : "USER-AGENT: ";
+			temp_str = (c == 'S') ? "Server: " : "User-Agent: ";
 			get_sdk_info(tempbuf, sizeof(tempbuf));
 			if (http_MakeMessage(buf, http_major_version, http_minor_version,
 					     "ss", temp_str, tempbuf) != 0)
@@ -1852,7 +1851,7 @@ int http_MakeMessage(membuffer *buf, int http_major_version,
 			}
 			if (http_MakeMessage(buf, http_major_version, http_minor_version,
 					"Q" "sbc", method, url.pathquery.buff,
-					url.pathquery.size, "HOST: ",
+					url.pathquery.size, "Host: ",
 					url.hostport.text.buff,
 					url.hostport.text.size) != 0)
 				goto error_handler;
@@ -1860,7 +1859,7 @@ int http_MakeMessage(membuffer *buf, int http_major_version,
 			/* content type header */
 			temp_str = (const char *)va_arg(argp, const char *);	/* type/subtype format */
 			if (http_MakeMessage(buf, http_major_version, http_minor_version,
-					     "ssc", "CONTENT-TYPE: ", temp_str) != 0)
+					     "ssc", "Content-Type: ", temp_str) != 0)
 				goto error_handler;
 		} else {
 			assert(0);
