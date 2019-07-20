@@ -52,8 +52,8 @@
 #include "upnpapi.h"
 #include "uuid.h"
 
-#ifdef WIN32
-	#define snprintf _snprintf
+#if defined(WIN32) && !defined(snprintf)
+#define snprintf _snprintf
 #endif
 
 #define STALE_JOBID (INVALID_JOB_ID -1)

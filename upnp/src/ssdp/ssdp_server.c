@@ -38,9 +38,11 @@
  * \file
  */
 
+#include <stdio.h>
+
 #ifndef WIN32
 	#include <sys/param.h>
-#else
+#elif !defined(snprintf)
 	#define snprintf _snprintf
 #endif /* WIN32 */
 
@@ -57,8 +59,6 @@
 #include "sock.h"
 #include "ThreadPool.h"
 #include "upnpapi.h"
-
-#include <stdio.h>
 
 #define MAX_TIME_TOREAD  45
 

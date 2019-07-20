@@ -49,6 +49,7 @@ extern "C" {
 #include "upnp.h" /* for Upnp_EventType */
 #include "upnptools.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -259,7 +260,9 @@ void linux_print(const char *format, ...)
 #endif /* __cplusplus */
 
 #ifdef WIN32
+#if !defined(snprintf)
 	#define snprintf	_snprintf
+#endif
 	#define strcasecmp	stricmp
 #endif
 

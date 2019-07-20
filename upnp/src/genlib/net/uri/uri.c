@@ -44,8 +44,9 @@
 		#include <lwres/netdb.h>
 	#endif
 #endif
-#ifdef WIN32
-	#define snprintf _snprintf
+#include <stdio.h>
+#if defined(WIN32) && !defined(snprintf)
+#define snprintf _snprintf
 #endif
 #include <assert.h>
 

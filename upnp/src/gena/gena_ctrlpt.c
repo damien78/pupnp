@@ -52,8 +52,8 @@
 #include "uuid.h"
 #include "upnpapi.h"
 
-#ifdef WIN32
-	#define snprintf _snprintf
+#if defined(WIN32) && !defined(snprintf)
+#define snprintf _snprintf
 #endif
 
 extern ithread_mutex_t GlobalClientSubscribeMutex;

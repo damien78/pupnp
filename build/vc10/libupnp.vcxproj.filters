@@ -11,37 +11,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\upnp\src\api\ActionComplete.c">
-      <Filter>sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\upnp\src\api\ActionRequest.c">
-      <Filter>sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ixml\src\attr.c">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\upnp\src\genlib\client_table\client_table.c">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\upnp\src\genlib\client_table\ClientSubscription.c">
-      <Filter>sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\upnp\src\api\Discovery.c">
-      <Filter>sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\ixml\src\document.c">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\ixml\src\element.c">
-      <Filter>sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\upnp\src\api\Event.c">
-      <Filter>sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\upnp\src\api\EventSubscribe.c">
-      <Filter>sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\upnp\src\api\FileInfo.c">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\threadutil\src\FreeList.c">
@@ -116,25 +95,13 @@
     <ClCompile Include="..\..\upnp\src\ssdp\ssdp_device.c">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\upnp\src\ssdp\ssdp_ResultData.c">
-      <Filter>sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\upnp\src\ssdp\ssdp_server.c">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\upnp\src\genlib\net\http\statcodes.c">
       <Filter>sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\upnp\src\api\StateVarComplete.c">
-      <Filter>sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\upnp\src\api\StateVarRequest.c">
-      <Filter>sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\upnp\src\genlib\util\strintmap.c">
-      <Filter>sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\upnp\src\api\SubscriptionRequest.c">
       <Filter>sources</Filter>
     </ClCompile>
     <ClCompile Include="..\..\upnp\src\uuid\sysdep.c">
