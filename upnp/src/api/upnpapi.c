@@ -3350,6 +3350,7 @@ int UpnpGetIfInfo(const char* IfName)
 					sin_addr, sizeof(v4_addr));
 				valid_addr_found = 1;
 				break;
+#ifdef UPNP_ENABLE_IPV6
 			case AF_INET6:
 				/* Only keep IPv6 link-local addresses. */
 				if (IN6_IS_ADDR_LINKLOCAL
@@ -3362,6 +3363,7 @@ int UpnpGetIfInfo(const char* IfName)
 					valid_addr_found = 1;
 				}
 				break;
+#endif
 			default:
 				if (valid_addr_found == 0) {
 					/* Address is not IPv4 or IPv6 and no valid address has  */
@@ -3385,7 +3387,9 @@ int UpnpGetIfInfo(const char* IfName)
 		return UPNP_E_INVALID_INTERFACE;
 	}
 	inet_ntop(AF_INET, &v4_addr, gIF_IPV4, sizeof(gIF_IPV4));
+#ifdef UPNP_ENABLE_IPV6
 	inet_ntop(AF_INET6, &v6_addr, gIF_IPV6, sizeof(gIF_IPV6));
+#endif
 #elif (defined(BSD) && BSD >= 199306) || defined(__FreeBSD_kernel__) /* _WIN32 */
 	struct ifaddrs* ifap, * ifa;
 	struct in_addr v4_addr = { 0 };
@@ -3438,6 +3442,7 @@ int UpnpGetIfInfo(const char* IfName)
 				sin_addr, sizeof(v4_addr));
 			valid_addr_found = 1;
 			break;
+#ifdef UPNP_ENABLE_IPV6
 		case AF_INET6:
 			/* Only keep IPv6 link-local addresses. */
 			if (IN6_IS_ADDR_LINKLOCAL
@@ -3450,6 +3455,7 @@ int UpnpGetIfInfo(const char* IfName)
 				valid_addr_found = 1;
 			}
 			break;
+#endif
 		default:
 			if (valid_addr_found == 0) {
 				/* Address is not IPv4 or IPv6 and no valid address has  */
@@ -3467,7 +3473,9 @@ int UpnpGetIfInfo(const char* IfName)
 		return UPNP_E_INVALID_INTERFACE;
 	}
 	inet_ntop(AF_INET, &v4_addr, gIF_IPV4, sizeof(gIF_IPV4));
+#ifdef UPNP_ENABLE_IPV6
 	inet_ntop(AF_INET6, &v6_addr, gIF_IPV6, sizeof(gIF_IPV6));
+#endif
 	gIF_INDEX = if_nametoindex(gIF_NAME);
 #else /* (defined(BSD) && BSD >= 199306) || defined(__FreeBSD_kernel__) */ /* _WIN32 */
 	struct ifreq ifArray[MAX_INTERFACES];
@@ -3571,6 +3579,7 @@ int UpnpGetIfInfo(const char* IfName)
 
 		return UPNP_E_INVALID_INTERFACE;
 	}
+#ifdef UPNP_ENABLE_IPV6
 	/* Try to get the IPv6 address for the same interface  */
 	/* from "/proc/net/if_inet6", if possible. */
 	inet6_procfd = fopen("/proc/net/if_inet6", "r");
@@ -3620,6 +3629,7 @@ int UpnpGetIfInfo(const char* IfName)
 }
 		fclose(inet6_procfd);
 	}
+#endif
 #endif /* (defined(BSD) && BSD >= 199306) || defined(__FreeBSD_kernel__) */ /* _WIN32 */
 	UpnpPrintf(UPNP_INFO, API, __FILE__, __LINE__,
 		"Interface name=%s, index=%d, v4=%s, v6=%s, ULA or GUA v6=%s\n",
