@@ -47,9 +47,9 @@
 		#define UPNP_INLINE _inline
 		typedef __int64 int64_t;
 		#define PRId64 "I64d"
-		#define PRIzd "ld"
-		#define PRIzu "lu"
-		#define PRIzx "lx"
+		#define PRIzd "zd"
+		#define PRIzu "zu"
+		#define PRIzx "zx"
 	#endif /* UPNP_USE_MSVCPP */
 
 	#ifdef UPNP_USE_BCBPP

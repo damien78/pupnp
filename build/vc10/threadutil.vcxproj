@@ -43,37 +43,45 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Lib|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Lib|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Lib|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -314,17 +322,16 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\threadutil\src\FreeList.c" />
-    <ClCompile Include="..\..\threadutil\src\LinkedList.c" />
-    <ClCompile Include="..\..\threadutil\src\ThreadPool.c" />
-    <ClCompile Include="..\..\threadutil\src\TimerThread.c" />
+    <ClCompile Include="..\..\upnp\src\threadutil\FreeList.c" />
+    <ClCompile Include="..\..\upnp\src\threadutil\LinkedList.c" />
+    <ClCompile Include="..\..\upnp\src\threadutil\ThreadPool.c" />
+    <ClCompile Include="..\..\upnp\src\threadutil\TimerThread.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\threadutil\inc\FreeList.h" />
-    <ClInclude Include="..\..\threadutil\inc\ithread.h" />
-    <ClInclude Include="..\..\threadutil\inc\LinkedList.h" />
-    <ClInclude Include="..\..\threadutil\inc\threadpool.h" />
-    <ClInclude Include="..\..\threadutil\inc\TimerThread.h" />
+    <ClInclude Include="..\..\upnp\src\threadutil\FreeList.h" />
+    <ClInclude Include="..\..\upnp\src\threadutil\LinkedList.h" />
+    <ClInclude Include="..\..\upnp\src\threadutil\threadpool.h" />
+    <ClInclude Include="..\..\upnp\src\threadutil\TimerThread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

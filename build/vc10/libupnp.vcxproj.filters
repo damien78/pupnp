@@ -140,6 +140,12 @@
     <ClCompile Include="..\..\upnp\src\win_dll.c">
       <Filter>sources</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\upnp\src\api\ExtraHeaders.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\upnp\src\genlib\util\list.c">
+      <Filter>sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\upnp\inc\ActionComplete.h">
