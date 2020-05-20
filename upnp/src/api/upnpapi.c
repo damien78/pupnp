@@ -3365,15 +3365,15 @@ int UpnpGetIfInfo(const char* IfName)
 				break;
 #endif
 			default:
-				if (valid_addr_found == 0) {
-					/* Address is not IPv4 or IPv6 and no valid address has  */
-					/* yet been found for this interface. Discard interface name. */
-					ifname_found = 0;
-				}
 				break;
 			}
 			/* Next address. */
 			uni_addr = uni_addr->Next;
+		}
+		if (valid_addr_found == 0) {
+			/* Address is not IPv4 or IPv6 and no valid address has  */
+			/* yet been found for this interface. Discard interface name. */
+			ifname_found = 0;
 		}
 		if (valid_addr_found == 1) {
 			gIF_INDEX = adapts_item->IfIndex;

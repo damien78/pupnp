@@ -505,9 +505,11 @@ int http_SendMessage(SOCKINFO *info, int *TimeOut, const char *fmt, ...)
 				} else {
 					/* write data */
 					nw = sock_write(info, file_buf, num_read, TimeOut);
-					UpnpPrintf(UPNP_INFO, HTTP, __FILE__, __LINE__,
-						   ">>> (SENT) >>>\n%.*s\n------------\n",
-						   nw, file_buf);
+					if (nw >= 0) {
+						UpnpPrintf(UPNP_INFO, HTTP, __FILE__, __LINE__,
+							">>> (SENT) >>>\n%.*s\n------------\n",
+							nw, file_buf);
+					}
 					/* Send error nothing we can do */
 					num_written = (size_t)nw;
 					if (nw <= 0 || num_written != num_read) {
