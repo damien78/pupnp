@@ -46,7 +46,9 @@
 		/* define some things the M$ VC++ doesn't know */
 		#define UPNP_INLINE _inline
 		typedef __int64 int64_t;
+	#ifndef PRId64
 		#define PRId64 "I64d"
+	#endif
 		#define PRIzd "zd"
 		#define PRIzu "zu"
 		#define PRIzx "zx"

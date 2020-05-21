@@ -666,7 +666,7 @@
     <ClInclude Include="..\..\upnp\inc\upnp.h" />
     <ClInclude Include="..\..\upnp\src\inc\upnp_timeout.h" />
     <ClInclude Include="..\..\upnp\src\inc\upnpapi.h" />
-    <ClInclude Include="..\inc\upnpconfig.h" />
+    <ClInclude Include="..\..\upnp\inc\upnpconfig.h" />
     <ClInclude Include="..\..\upnp\inc\upnpdebug.h" />
     <ClInclude Include="..\..\upnp\inc\UpnpGlobal.h" />
     <ClInclude Include="..\..\upnp\inc\UpnpInet.h" />

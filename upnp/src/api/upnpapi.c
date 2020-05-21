@@ -3653,6 +3653,12 @@ int UpnpGetIfInfo(const char *IfName)
 		}
 		if (ifname_found == 0) {
 			/* We have found a valid interface name. Keep it. */
+#ifdef UPNP_ADAPTER_UUID_NAME
+			strncpy(gIF_NAME,
+				adapts_item->AdapterName,
+				sizeof(gIF_NAME) - 1);
+			gIF_NAME[sizeof(gIF_NAME) - 1] = 0;
+#else
 			/*
 			 * Partial fix for Windows: Friendly name is wchar
 			 * string, but currently gIF_NAME is char string. For
@@ -3663,8 +3669,18 @@ int UpnpGetIfInfo(const char *IfName)
 			wcstombs(gIF_NAME,
 				adapts_item->FriendlyName,
 				sizeof(gIF_NAME));
+#endif
 			ifname_found = 1;
 		} else {
+#ifdef UPNP_ADAPTER_UUID_NAME
+			if (strncmp(gIF_NAME,
+				    adapts_item->AdapterName,
+				    sizeof(gIF_NAME)) != 0) {
+				/* This is not the interface we're looking for.
+				 */
+				continue;
+			}
+#else
 			/*
 			 * Partial fix for Windows: Friendly name is wchar
 			 * string, but currently gIF_NAME is char string. For
@@ -3682,6 +3698,7 @@ int UpnpGetIfInfo(const char *IfName)
 				 */
 				continue;
 			}
+#endif
 		}
 		/* Loop thru this adapter's unicast IP addresses. */
 		uni_addr = adapts_item->FirstUnicastAddress;
@@ -3695,6 +3712,7 @@ int UpnpGetIfInfo(const char *IfName)
 					sizeof(v4_addr));
 				valid_addr_found = 1;
 				break;
+#ifdef UPNP_ENABLE_IPV6
 			case AF_INET6:
 				/* Only keep IPv6 link-local addresses. */
 				if (IN6_IS_ADDR_LINKLOCAL(
@@ -3708,18 +3726,19 @@ int UpnpGetIfInfo(const char *IfName)
 					valid_addr_found = 1;
 				}
 				break;
+#endif
 			default:
-				if (valid_addr_found == 0) {
-					/* Address is not IPv4 or IPv6 and no
-					 * valid address has  */
-					/* yet been found for this interface.
-					 * Discard interface name. */
-					ifname_found = 0;
-				}
 				break;
 			}
 			/* Next address. */
 			uni_addr = uni_addr->Next;
+		}
+		if (valid_addr_found == 0) {
+			/* Address is not IPv4 or IPv6 and no
+			 * valid address has  */
+			/* yet been found for this interface.
+			 * Discard interface name. */
+			ifname_found = 0;
 		}
 		if (valid_addr_found == 1) {
 			gIF_INDEX = adapts_item->IfIndex;
@@ -3737,7 +3756,9 @@ int UpnpGetIfInfo(const char *IfName)
 		return UPNP_E_INVALID_INTERFACE;
 	}
 	inet_ntop(AF_INET, &v4_addr, gIF_IPV4, sizeof(gIF_IPV4));
+#ifdef UPNP_ENABLE_IPV6
 	inet_ntop(AF_INET6, &v6_addr, gIF_IPV6, sizeof(gIF_IPV6));
+#endif
 #elif (defined(BSD) && BSD >= 199306) || \
 	defined(__FreeBSD_kernel__) /* _WIN32 */
 	struct ifaddrs *ifap, *ifa;
@@ -3797,6 +3818,7 @@ int UpnpGetIfInfo(const char *IfName)
 				sizeof(v4_addr));
 			valid_addr_found = 1;
 			break;
+#ifdef UPNP_ENABLE_IPV6
 		case AF_INET6:
 			/* Only keep IPv6 link-local addresses. */
 			if (IN6_IS_ADDR_LINKLOCAL(
@@ -3810,6 +3832,7 @@ int UpnpGetIfInfo(const char *IfName)
 				valid_addr_found = 1;
 			}
 			break;
+#endif
 		default:
 			if (valid_addr_found == 0) {
 				/* Address is not IPv4 or IPv6 and no valid
@@ -3833,7 +3856,9 @@ int UpnpGetIfInfo(const char *IfName)
 		return UPNP_E_INVALID_INTERFACE;
 	}
 	inet_ntop(AF_INET, &v4_addr, gIF_IPV4, sizeof(gIF_IPV4));
+#ifdef UPNP_ENABLE_IPV6
 	inet_ntop(AF_INET6, &v6_addr, gIF_IPV6, sizeof(gIF_IPV6));
+#endif
 	gIF_INDEX = if_nametoindex(gIF_NAME);
 #else /* (defined(BSD) && BSD >= 199306) || defined(__FreeBSD_kernel__) */ /* _WIN32 */
 	struct ifreq ifArray[MAX_INTERFACES];
@@ -3963,6 +3988,7 @@ int UpnpGetIfInfo(const char *IfName)
 
 		return UPNP_E_INVALID_INTERFACE;
 	}
+#ifdef UPNP_ENABLE_IPV6
 	/* Try to get the IPv6 address for the same interface  */
 	/* from "/proc/net/if_inet6", if possible. */
 	inet6_procfd = fopen("/proc/net/if_inet6", "r");
@@ -4035,6 +4061,7 @@ int UpnpGetIfInfo(const char *IfName)
 		}
 		fclose(inet6_procfd);
 	}
+#endif
 #endif /* (defined(BSD) && BSD >= 199306) || defined(__FreeBSD_kernel__) */ /* _WIN32 */
 	UpnpPrintf(UPNP_INFO,
 		API,

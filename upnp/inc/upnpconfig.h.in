@@ -105,6 +105,10 @@
  *  (i.e. configure --enable-tools) : <upnp/upnptools.h> file is available */
 #undef UPNP_HAVE_TOOLS
 
+/* Define to 1 if using Windows AdapterName instead of FriendlyName for the
+ * network adapter selection */
+#undef UPNP_ADAPTER_UUID_NAME
+
 /** Defined to 1 if the library has been compiled with ipv6 support
  *  (i.e. configure --enable-ipv6) */
 #undef UPNP_ENABLE_IPV6

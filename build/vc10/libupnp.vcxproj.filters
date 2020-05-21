@@ -271,9 +271,6 @@
     <ClInclude Include="..\..\upnp\src\inc\upnpapi.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\inc\upnpconfig.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\upnp\inc\upnpdebug.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -314,6 +311,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\upnp\src\inc\webserver.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\upnp\inc\upnpconfig.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
