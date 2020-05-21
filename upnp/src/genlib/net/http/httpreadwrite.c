@@ -846,7 +846,7 @@ int http_Download(const char *url_str,
 		HTTPMETHOD_GET,
 		url.pathquery.buff,
 		url.pathquery.size,
-		"HOST: ",
+		"Host: ",
 		hoststr,
 		hostlen);
 	if (ret_code != 0) {
@@ -1012,7 +1012,7 @@ int MakeGenericMessage(http_method_t method,
 				1,
 				"s"
 				"bcDCU",
-				"HOST: ",
+				"Host: ",
 				hoststr,
 				hostlen);
 		}
@@ -1703,7 +1703,7 @@ int http_MakeMessage(membuffer *buf,
 		} else if (c == 'K') {
 			/* Add Chunky header */
 			if (membuffer_append(buf,
-				    "TRANSFER-ENCODING: chunked\r\n",
+				    "Transfer-Encoding: chunked\r\n",
 				    strlen("Transfer-Encoding: chunked\r\n")))
 				goto error_handler;
 		} else if (c == 'G') {
@@ -1755,7 +1755,7 @@ int http_MakeMessage(membuffer *buf,
 			/* date */
 			if (c == 'D') {
 				/* header */
-				start_str = "DATE: ";
+				start_str = "Date: ";
 				end_str = "\r\n";
 				curr_time = time(NULL);
 				loc_time = &curr_time;
@@ -1798,7 +1798,7 @@ int http_MakeMessage(membuffer *buf,
 					http_major_version,
 					http_minor_version,
 					"ssc",
-					"CONTENT-LANGUAGE: ",
+					"Content-Language: ",
 					WEB_SERVER_CONTENT_LANGUAGE) != 0)
 				goto error_handler;
 		} else if (c == 'C') {
@@ -1807,7 +1807,7 @@ int http_MakeMessage(membuffer *buf,
 					http_minor_version == 1)) {
 				/* connection header */
 				if (membuffer_append_str(
-					    buf, "CONNECTION: close\r\n"))
+					    buf, "Connection: close\r\n"))
 					goto error_handler;
 			}
 		} else if (c == 'N') {
@@ -1818,7 +1818,7 @@ int http_MakeMessage(membuffer *buf,
 				    http_major_version,
 				    http_minor_version,
 				    "shc",
-				    "CONTENT-LENGTH: ",
+				    "Content-Length: ",
 				    bignum) != 0)
 				goto error_handler;
 			/* Add accept ranges */
@@ -1830,7 +1830,7 @@ int http_MakeMessage(membuffer *buf,
 				goto error_handler;
 		} else if (c == 'S' || c == 'U') {
 			/* SERVER or USER-AGENT header */
-			temp_str = (c == 'S') ? "SERVER: " : "USER-AGENT: ";
+			temp_str = (c == 'S') ? "Server: " : "User-Agent: ";
 			get_sdk_info(tempbuf, sizeof(tempbuf));
 			if (http_MakeMessage(buf,
 				    http_major_version,
@@ -1928,7 +1928,7 @@ int http_MakeMessage(membuffer *buf,
 				    method,
 				    url.pathquery.buff,
 				    url.pathquery.size,
-				    "HOST: ",
+				    "Host: ",
 				    url.hostport.text.buff,
 				    url.hostport.text.size) != 0)
 				goto error_handler;
@@ -1940,7 +1940,7 @@ int http_MakeMessage(membuffer *buf,
 				    http_major_version,
 				    http_minor_version,
 				    "ssc",
-				    "CONTENT-TYPE: ",
+				    "Content-Type: ",
 				    temp_str) != 0)
 				goto error_handler;
 		} else {
@@ -2068,7 +2068,7 @@ int MakeGetMessageEx(const char *url_str,
 			HTTPMETHOD_GET,
 			url->pathquery.buff,
 			url->pathquery.size,
-			"HOST: ",
+			"Host: ",
 			hoststr,
 			hostlen,
 			pRangeSpecifier);

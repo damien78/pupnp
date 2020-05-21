@@ -824,7 +824,7 @@ static int CreateHTTPRangeResponseHeader(
 	RangeInput = strdup(ByteRangeSpecifier);
 	if (!RangeInput)
 		return HTTP_INTERNAL_SERVER_ERROR;
-	/* CONTENT-RANGE: bytes 222-3333/4000  HTTP_PARTIAL_CONTENT */
+	/* Content-Range: bytes 222-3333/4000  HTTP_PARTIAL_CONTENT */
 	if (StrStr(RangeInput, "bytes") == NULL ||
 		(Ptr = StrStr(RangeInput, "=")) == NULL) {
 		free(RangeInput);
@@ -856,7 +856,7 @@ static int CreateHTTPRangeResponseHeader(
 			/* Data between two range. */
 			rc = snprintf(Instr->RangeHeader,
 				sizeof(Instr->RangeHeader),
-				"CONTENT-RANGE: bytes %" PRId64 "-%" PRId64
+				"Content-Range: bytes %" PRId64 "-%" PRId64
 				"/%" PRId64 "\r\n",
 				(int64_t)FirstByte,
 				(int64_t)LastByte,
@@ -872,7 +872,7 @@ static int CreateHTTPRangeResponseHeader(
 			Instr->ReadSendSize = FileLength - FirstByte;
 			rc = snprintf(Instr->RangeHeader,
 				sizeof(Instr->RangeHeader),
-				"CONTENT-RANGE: bytes %" PRId64 "-%" PRId64
+				"Content-Range: bytes %" PRId64 "-%" PRId64
 				"/%" PRId64 "\r\n",
 				(int64_t)FirstByte,
 				(int64_t)(FileLength - 1),
@@ -888,7 +888,7 @@ static int CreateHTTPRangeResponseHeader(
 				Instr->ReadSendSize = FileLength;
 				rc = snprintf(Instr->RangeHeader,
 					sizeof(Instr->RangeHeader),
-					"CONTENT-RANGE: bytes 0-%" PRId64
+					"Content-Range: bytes 0-%" PRId64
 					"/%" PRId64 "\r\n",
 					(int64_t)(FileLength - 1),
 					(int64_t)FileLength);
@@ -897,7 +897,7 @@ static int CreateHTTPRangeResponseHeader(
 				Instr->ReadSendSize = LastByte;
 				rc = snprintf(Instr->RangeHeader,
 					sizeof(Instr->RangeHeader),
-					"CONTENT-RANGE: bytes %" PRId64
+					"Content-Range: bytes %" PRId64
 					"-%" PRId64 "/%" PRId64 "\r\n",
 					(int64_t)(FileLength - LastByte),
 					(int64_t)FileLength - 1,
@@ -1390,7 +1390,7 @@ static int process_request(
 				    finfo), /* content type */
 			    RespInstr,      /* range info */
 			    RespInstr,      /* language info */
-			    "LAST-MODIFIED: ",
+			    "Last-Modified: ",
 			    &aux_LastModified,
 			    X_USER_AGENT,
 			    UpnpFileInfo_get_ExtraHeadersList(finfo)) != 0) {
@@ -1415,7 +1415,7 @@ static int process_request(
 				    finfo), /* content type */
 			    RespInstr,      /* range info */
 			    RespInstr,      /* language info */
-			    "LAST-MODIFIED: ",
+			    "Last-Modified: ",
 			    &aux_LastModified,
 			    X_USER_AGENT,
 			    UpnpFileInfo_get_ExtraHeadersList(finfo)) != 0) {
@@ -1436,7 +1436,7 @@ static int process_request(
 			    UpnpFileInfo_get_ContentType(
 				    finfo), /* content type */
 			    RespInstr,      /* language info */
-			    "LAST-MODIFIED: ",
+			    "Last-Modified: ",
 			    &aux_LastModified,
 			    X_USER_AGENT,
 			    UpnpFileInfo_get_ExtraHeadersList(finfo)) != 0) {
@@ -1461,7 +1461,7 @@ static int process_request(
 				    UpnpFileInfo_get_ContentType(
 					    finfo), /* content type */
 				    RespInstr,      /* language info */
-				    "LAST-MODIFIED: ",
+				    "Last-Modified: ",
 				    &aux_LastModified,
 				    X_USER_AGENT,
 				    UpnpFileInfo_get_ExtraHeadersList(finfo)) !=
@@ -1482,7 +1482,7 @@ static int process_request(
 				    UpnpFileInfo_get_ContentType(
 					    finfo), /* content type */
 				    RespInstr,      /* language info */
-				    "LAST-MODIFIED: ",
+				    "Last-Modified: ",
 				    &aux_LastModified,
 				    X_USER_AGENT,
 				    UpnpFileInfo_get_ExtraHeadersList(finfo)) !=

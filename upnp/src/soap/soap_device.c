@@ -152,7 +152,7 @@ static void send_error_response(
 		    500,
 		    content_length,
 		    ContentTypeHeader,
-		    "EXT:\r\n",
+		    "Ext:\r\n",
 		    X_USER_AGENT,
 		    start_body,
 		    err_code_str,
@@ -212,7 +212,7 @@ static UPNP_INLINE void send_var_query_response(
 		    HTTP_OK,
 		    content_length,
 		    ContentTypeHeader,
-		    "EXT:\r\n",
+		    "Ext:\r\n",
 		    X_USER_AGENT,
 		    start_body,
 		    var_value,
@@ -271,7 +271,7 @@ static UPNP_INLINE void send_action_response(
 		    HTTP_OK, /* status code */
 		    content_length,
 		    ContentTypeHeader,
-		    "EXT:\r\n",
+		    "Ext:\r\n",
 		    X_USER_AGENT) != 0) {
 		goto error_handler;
 	}
@@ -549,7 +549,7 @@ static int get_mpost_acton_hdrval(
 	if (membuffer_assign(&soap_action_name,
 		    ns_value.buf,
 		    ns_value.length) == UPNP_E_OUTOF_MEMORY ||
-		membuffer_append_str(&soap_action_name, "-SOAPACTION") ==
+		membuffer_append_str(&soap_action_name, "-SOAPAction") ==
 			UPNP_E_OUTOF_MEMORY) {
 		membuffer_destroy(&soap_action_name);
 		return UPNP_E_OUTOF_MEMORY;
