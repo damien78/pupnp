@@ -3653,6 +3653,12 @@ int UpnpGetIfInfo(const char *IfName)
 		}
 		if (ifname_found == 0) {
 			/* We have found a valid interface name. Keep it. */
+#ifdef UPNP_ADAPTER_UUID_NAME
+			strncpy(gIF_NAME,
+				adapts_item->AdapterName,
+				sizeof(gIF_NAME) - 1);
+			gIF_NAME[sizeof(gIF_NAME) - 1] = 0;
+#else
 			/*
 			 * Partial fix for Windows: Friendly name is wchar
 			 * string, but currently gIF_NAME is char string. For
@@ -3663,8 +3669,18 @@ int UpnpGetIfInfo(const char *IfName)
 			wcstombs(gIF_NAME,
 				adapts_item->FriendlyName,
 				sizeof(gIF_NAME));
+#endif
 			ifname_found = 1;
 		} else {
+#ifdef UPNP_ADAPTER_UUID_NAME
+			if (strncmp(gIF_NAME,
+				    adapts_item->AdapterName,
+				    sizeof(gIF_NAME)) != 0) {
+				/* This is not the interface we're looking for.
+				 */
+				continue;
+			}
+#else
 			/*
 			 * Partial fix for Windows: Friendly name is wchar
 			 * string, but currently gIF_NAME is char string. For
@@ -3682,6 +3698,7 @@ int UpnpGetIfInfo(const char *IfName)
 				 */
 				continue;
 			}
+#endif
 		}
 		/* Loop thru this adapter's unicast IP addresses. */
 		uni_addr = adapts_item->FirstUnicastAddress;
@@ -3696,6 +3713,7 @@ int UpnpGetIfInfo(const char *IfName)
 				/* TODO: Retrieve IPv4 netmask */
 				valid_addr_found = 1;
 				break;
+#ifdef UPNP_ENABLE_IPV6
 			case AF_INET6:
 				/* TODO: Retrieve IPv6 ULA or GUA address and
 				 * its prefix */
@@ -3712,18 +3730,19 @@ int UpnpGetIfInfo(const char *IfName)
 					valid_addr_found = 1;
 				}
 				break;
+#endif
 			default:
-				if (valid_addr_found == 0) {
-					/* Address is not IPv4 or IPv6 and no
-					 * valid address has  */
-					/* yet been found for this interface.
-					 * Discard interface name. */
-					ifname_found = 0;
-				}
 				break;
 			}
 			/* Next address. */
 			uni_addr = uni_addr->Next;
+		}
+		if (valid_addr_found == 0) {
+			/* Address is not IPv4 or IPv6 and no
+			 * valid address has  */
+			/* yet been found for this interface.
+			 * Discard interface name. */
+			ifname_found = 0;
 		}
 		if (valid_addr_found == 1) {
 			gIF_INDEX = adapts_item->IfIndex;
@@ -3742,8 +3761,11 @@ int UpnpGetIfInfo(const char *IfName)
 		return UPNP_E_INVALID_INTERFACE;
 	}
 	inet_ntop(AF_INET, &v4_addr, gIF_IPV4, sizeof(gIF_IPV4));
+#ifdef UPNP_ENABLE_IPV6
 	inet_ntop(AF_INET6, &v6_addr, gIF_IPV6, sizeof(gIF_IPV6));
-#else
+#endif
+#elif (defined(BSD) && BSD >= 199306) || \
+	defined(__FreeBSD_kernel__) /* _WIN32 */
 	struct ifaddrs *ifap, *ifa;
 	struct in_addr v4_addr = {0};
 	struct in_addr v4_netmask = {0};
@@ -3811,6 +3833,7 @@ int UpnpGetIfInfo(const char *IfName)
 				sizeof(v4_netmask));
 			valid_v4_addr_found = 1;
 			break;
+#ifdef UPNP_ENABLE_IPV6
 		case AF_INET6:
 			if (IN6_IS_ADDR_ULA(
 				    &((struct sockaddr_in6 *)(ifa->ifa_addr))
@@ -3856,6 +3879,7 @@ int UpnpGetIfInfo(const char *IfName)
 				valid_v6_addr_found = 1;
 			}
 			break;
+#endif
 		default:
 			if (IfName == NULL && valid_v4_addr_found == 0 &&
 				valid_v6ulagua_addr_found == 0 &&
@@ -3890,6 +3914,7 @@ int UpnpGetIfInfo(const char *IfName)
 			sizeof(gIF_IPV4_NETMASK));
 	}
 	gIF_INDEX = if_nametoindex(gIF_NAME);
+#ifdef UPNP_ENABLE_IPV6
 	if (!IN6_IS_ADDR_UNSPECIFIED(&v6_addr)) {
 		if (valid_v6_addr_found) {
 			inet_ntop(
@@ -3904,6 +3929,7 @@ int UpnpGetIfInfo(const char *IfName)
 			gIF_IPV6_ULA_GUA_PREFIX_LENGTH = v6ulagua_prefix;
 		}
 	}
+#endif
 #endif
 	UpnpPrintf(UPNP_INFO,
 		API,

@@ -363,9 +363,9 @@ static void CreateServicePacket(
 					    "R" "sdc" "D" "sc" "ssc" "ssc" "ssc"
 					    "S" "Xc" "ssc" "ssc"
 					    "sdc" "sdc" "sdcc", HTTP_OK,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "EXT:", "LOCATION: ", location,
-					    "OPT: ",
+					    "Cache-Control: max-age=", duration,
+					    "Ext:", "Location: ", location,
+					    "Opt: ",
 					    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
 					    "01-NLS: ", gUpnpSdkNLSuuid,
 					    X_USER_AGENT, "ST: ", nt, "USN: ",
@@ -378,8 +378,8 @@ static void CreateServicePacket(
 					    "R" "sdc" "D" "sc" "ssc"
 					    "S" "ssc" "ssc"
 					    "sdc" "sdc" "sdcc", HTTP_OK,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "EXT:", "LOCATION: ", location,
+					    "Cache-Control: max-age=", duration,
+					    "Ext:", "Location: ", location,
 					    "ST: ", nt, "USN: ",
 					    usn, "Powerstate: ", PowerState,
 					    "SleepPeriod: ", SleepPeriod,
@@ -391,9 +391,9 @@ static void CreateServicePacket(
 			ret_code = http_MakeMessage(&buf, 1, 1,
 					    "R" "sdc" "D" "sc" "ssc" "ssc" "ssc"
 					    "S" "Xc" "ssc" "sscc", HTTP_OK,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "EXT:", "LOCATION: ", location,
-					    "OPT: ",
+					    "Cache-Control: max-age=", duration,
+					    "Ext:", "Location: ", location,
+					    "Opt: ",
 					    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
 					    "01-NLS: ", gUpnpSdkNLSuuid,
 					    X_USER_AGENT, "ST: ", nt, "USN: ",
@@ -402,8 +402,8 @@ static void CreateServicePacket(
 			ret_code = http_MakeMessage(&buf, 1, 1,
 					    "R" "sdc" "D" "sc" "ssc"
 					    "S" "ssc" "sscc", HTTP_OK,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "EXT:", "LOCATION: ", location,
+					    "Cache-Control: max-age=", duration,
+					    "Ext:", "Location: ", location,
 					    "ST: ", nt, "USN: ", usn);
 #endif /* UPNP_HAVE_OPTSSDP */
 		}
@@ -438,9 +438,9 @@ static void CreateServicePacket(
 					    "ssc" "ssc" "S" "Xc" "ssc"
 					    "sdc" "sdc" "sdcc",
 					    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
-					    "HOST: ", host, ":", SSDP_PORT,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "LOCATION: ", location, "OPT: ",
+					    "Host: ", host, ":", SSDP_PORT,
+					    "Cache-Control: max-age=", duration,
+					    "Location: ", location, "Opt: ",
 					    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
 					    "01-NLS: ", gUpnpSdkNLSuuid, "NT: ",
 					    nt, "NTS: ", nts, X_USER_AGENT,
@@ -454,9 +454,9 @@ static void CreateServicePacket(
 					    "ssc" "ssc" "S" "ssc"
 					    "sdc" "sdc" "sdcc",
 					    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
-					    "HOST: ", host, ":", SSDP_PORT,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "LOCATION: ", location, "NT: ", nt,
+					    "Host: ", host, ":", SSDP_PORT,
+					    "Cache-Control: max-age=", duration,
+					    "Location: ", location, "NT: ", nt,
 					    "NTS: ", nts,
 					    "USN: ", usn, "Powerstate: ",
 					    PowerState, "SleepPeriod: ",
@@ -469,9 +469,9 @@ static void CreateServicePacket(
 					    "Q" "sssdc" "sdc" "ssc" "ssc" "ssc"
 					    "ssc" "ssc" "S" "Xc" "sscc",
 					    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
-					    "HOST: ", host, ":", SSDP_PORT,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "LOCATION: ", location, "OPT: ",
+					    "Host: ", host, ":", SSDP_PORT,
+					    "Cache-Control: max-age=", duration,
+					    "Location: ", location, "Opt: ",
 					    "\"http://schemas.upnp.org/upnp/1/0/\"; ns=01",
 					    "01-NLS: ", gUpnpSdkNLSuuid, "NT: ",
 					    nt, "NTS: ", nts, X_USER_AGENT,
@@ -481,9 +481,9 @@ static void CreateServicePacket(
 					    "Q" "sssdc" "sdc" "ssc"
 					    "ssc" "ssc" "S" "sscc",
 					    HTTPMETHOD_NOTIFY, "*", (size_t) 1,
-					    "HOST: ", host, ":", SSDP_PORT,
-					    "CACHE-CONTROL: max-age=", duration,
-					    "LOCATION: ", location, "NT: ", nt,
+					    "Host: ", host, ":", SSDP_PORT,
+					    "Cache-Control: max-age=", duration,
+					    "Location: ", location, "NT: ", nt,
 					    "NTS: ", nts, "USN: ", usn);
 #endif /* UPNP_HAVE_OPTSSDP */
 		}
