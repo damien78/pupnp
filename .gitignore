@@ -152,3 +152,4 @@ upnp/test_log.trs
 /build/vc10/IUpnpErrFile.txt
 /build/vc10/IUpnpInfoFile.txt
 /build/vc10/*.opensdf
+/build/vc10/out.vc10.ARM64
