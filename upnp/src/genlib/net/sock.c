@@ -174,6 +174,10 @@ static int sock_read_write(
 	size_t byte_left = (size_t)0;
 	ssize_t num_written;
 
+	if (sockfd < 0 || sockfd >= FD_SETSIZE) {
+		return UPNP_E_SOCKET_ERROR;
+	}
+	
 	FD_ZERO(&readSet);
 	FD_ZERO(&writeSet);
 	if (bRead)
