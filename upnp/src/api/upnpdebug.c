@@ -87,22 +87,21 @@ int UpnpInitLog(void)
 	}
 	is_stderr = 0;
 	if (fileName) {
-		char *err_buff = NULL;
+		char err_buff[80];
 #ifdef _WIN32
 		fopen_s(&fp, fileName, "a");
 		if (fp == NULL) {
-			strerror_s(err_buff, 80, errno);
+			strerror_s(err_buff, sizeof(err_buff), errno);
 #else
 		if ((fp = fopen(fileName, "a")) == NULL) {
-			err_buff = strerror(errno);
+			strncpy(err_buff, strerror(errno), sizeof(err_buff) - 1);
+			err_buff[sizeof(err_buff) - 1] = '\0';
 #endif
 			fprintf(stderr,
 				"Failed to open fileName (%s): %s\n",
 				fileName,
 				err_buff);
 		}
-
-		free(err_buff);
 	}
 	if (fp == NULL) {
 		fp = stderr;
