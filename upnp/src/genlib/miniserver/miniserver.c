@@ -502,6 +502,8 @@ static void handle_request(
 	ret_code = sock_init_with_ip(
 		&info, sock, (struct sockaddr *)&request->foreign_sockaddr);
 	if (ret_code != UPNP_E_SUCCESS) {
+		remove_active_connection(sock);
+		sock_close(sock);
 		free(request);
 		httpmsg_destroy(h_msg);
 		return;
