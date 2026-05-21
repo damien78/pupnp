@@ -36,7 +36,6 @@
 #include "config.h"
 
 #include "ithread.h"
-#include "ixml.h"
 #include "upnp.h"
 #include "upnpdebug.h"
 
