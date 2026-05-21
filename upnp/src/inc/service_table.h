@@ -178,35 +178,35 @@ service_info *FindServiceId(
 	 * table. */
 	const char *UDN);
 
-/*!
- * \brief Traverses the service table and finds the node whose event URL Path
- * matches a know value.
- *
- * \return Pointer to the service list node from the service table whose event
- * URL matches a known event URL.
- */
-#if EXCLUDE_GENA == 0
+	/*!
+	 * \brief Traverses the service table and finds the node whose event URL
+	 * Path matches a know value.
+	 *
+	 * \return Pointer to the service list node from the service table whose
+	 * event URL matches a known event URL.
+	 */
+	#if EXCLUDE_GENA == 0
 service_info *FindServiceEventURLPath(
 	/*! [in] Service table. */
 	service_table *table,
 	/*! [in] Event URL path used to find a service from the table. */
 	const char *eventURLPath);
-#endif /* EXCLUDE_GENA */
+	#endif /* EXCLUDE_GENA */
 
-/*!
- * \brief Traverses the service table and finds the node whose control URL Path
- * matches a know value.
- *
- * \return Pointer to the service list node from the service table whose control
- * URL Path matches a known value.
- */
-#if EXCLUDE_SOAP == 0
+	/*!
+	 * \brief Traverses the service table and finds the node whose control
+	 * URL Path matches a know value.
+	 *
+	 * \return Pointer to the service list node from the service table whose
+	 * control URL Path matches a known value.
+	 */
+	#if EXCLUDE_SOAP == 0
 service_info *FindServiceControlURLPath(
 	/*! [in] Service table. */
 	service_table *table,
 	/*! [in] Control URL path used to find a service from the table. */
 	const char *controlURLPath);
-#endif /* EXCLUDE_SOAP */
+	#endif /* EXCLUDE_SOAP */
 
 	/*!
 	 * \brief For debugging purposes prints information from the service

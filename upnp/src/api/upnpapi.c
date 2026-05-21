@@ -4244,20 +4244,20 @@ Upnp_Handle_Type GetDeviceHandleInfoForPath(const char *path,
 		switch (GetHandleInfo(*device_handle_out, HndInfo)) {
 		case HND_DEVICE:
 			if ((*HndInfo)->DeviceAf == AddressFamily) {
-#if EXCLUDE_SOAP == 0
+	#if EXCLUDE_SOAP == 0
 				if ((*serv_info = FindServiceControlURLPath(
 					     &(*HndInfo)->ServiceTable,
 					     path))) {
 					return HND_DEVICE;
 				}
-#endif /* EXCLUDE_SOAP */
-#if EXCLUDE_GENA == 0
+	#endif /* EXCLUDE_SOAP */
+	#if EXCLUDE_GENA == 0
 				if ((*serv_info = FindServiceEventURLPath(
 					     &(*HndInfo)->ServiceTable,
 					     path))) {
 					return HND_DEVICE;
 				}
-#endif /* EXCLUDE_GENA */
+	#endif /* EXCLUDE_GENA */
 			}
 			break;
 		default:

@@ -94,7 +94,9 @@ int UpnpInitLog(void)
 			strerror_s(err_buff, sizeof(err_buff), errno);
 #else
 		if ((fp = fopen(fileName, "a")) == NULL) {
-			strncpy(err_buff, strerror(errno), sizeof(err_buff) - 1);
+			strncpy(err_buff,
+				strerror(errno),
+				sizeof(err_buff) - 1);
 			err_buff[sizeof(err_buff) - 1] = '\0';
 #endif
 			fprintf(stderr,
