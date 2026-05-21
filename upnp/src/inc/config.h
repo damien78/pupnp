@@ -134,6 +134,20 @@
 #define MAX_JOBS_TOTAL 100
 /* @} */
 
+/*! \name MAX_SUBSCRIPTION_CALLBACK_HEADER_SIZE
+ *
+ *  The {\tt MAX_SUBSCRIPTION_CALLBACK_HEADER_SIZE} constant sets the maximum
+ *  number of bytes allowed for the Callback header value in a SUBSCRIBE
+ *  request.  Requests exceeding this limit are rejected with HTTP 412
+ *  Precondition Failed without allocating storage for the URL, preventing
+ *  memory exhaustion attacks (issue #435).  The default is 5000 bytes, which
+ *  is generous for any legitimate UPnP callback URL.
+ *
+ * @{
+ */
+#define MAX_SUBSCRIPTION_CALLBACK_HEADER_SIZE 5000
+/* @} */
+
 /*! \name MAX_SUBSCRIPTION_QUEUED_EVENTS
  *
  *  The {\tt MAX_SUBSCRIPTION_QUEUED_EVENTS} determines the maximum number of

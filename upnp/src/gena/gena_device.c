@@ -1448,6 +1448,15 @@ void gena_process_subscription_request(SOCKINFO *info, http_message_t *request)
 		HandleUnlock(__FILE__, __LINE__);
 		goto exit_function;
 	}
+	/* Reject oversized Callback headers before allocating storage.
+	 * Avoids memory exhaustion when an attacker sends many SUBSCRIBE
+	 * requests with large random callback URLs (issue #435). */
+	if (callback_hdr.length > MAX_SUBSCRIPTION_CALLBACK_HEADER_SIZE) {
+		error_respond(info, HTTP_PRECONDITION_FAILED, request);
+		freeSubscriptionList(sub);
+		HandleUnlock(__FILE__, __LINE__);
+		goto exit_function;
+	}
 	return_code = create_url_list(&callback_hdr, &sub->DeliveryURLs);
 	if (return_code == 0) {
 		error_respond(info, HTTP_PRECONDITION_FAILED, request);

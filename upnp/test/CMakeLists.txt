@@ -2,6 +2,7 @@ UPNP_Add_Unit_Test(test-upnp-list test_list.c)
 UPNP_Add_Unit_Test(test-upnp-init test_init.c)
 UPNP_Add_Unit_Test(test-upnp-log test_log.c)
 UPNP_Add_Unit_Test(test-upnp-url test_url.c)
+UPNP_Add_Unit_Test(test-upnp-gena-subscribe-dos test_gena_subscribe_dos.c)
 
 # On Solaris/illumos, getaddrinfo and freeaddrinfo live in libsocket (and
 # sometimes libnsl) rather than in the C library.  find_library() probes for
