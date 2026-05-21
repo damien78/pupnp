@@ -958,7 +958,7 @@ int UpnpRegisterRootDevice(const char *DescUrl,
 	ListInit(&HInfo->SsdpSearchList, NULL, NULL);
 	HInfo->ClientSubList = NULL;
 	#endif /* INCLUDE_CLIENT_APIS */
-	HInfo->MaxSubscriptions = UPNP_INFINITE;
+	HInfo->MaxSubscriptions = DEFAULT_MAX_SUBSCRIPTIONS;
 	HInfo->MaxSubscriptionTimeOut = UPNP_INFINITE;
 	HInfo->DeviceAf = AF_INET;
 
@@ -1162,7 +1162,7 @@ int UpnpRegisterRootDevice2(Upnp_DescType descriptionType,
 	ListInit(&HInfo->SsdpSearchList, NULL, NULL);
 	HInfo->ClientSubList = NULL;
 	#endif /* INCLUDE_CLIENT_APIS */
-	HInfo->MaxSubscriptions = UPNP_INFINITE;
+	HInfo->MaxSubscriptions = DEFAULT_MAX_SUBSCRIPTIONS;
 	HInfo->MaxSubscriptionTimeOut = UPNP_INFINITE;
 	HInfo->DeviceAf = AF_INET;
 
@@ -1344,7 +1344,7 @@ int UpnpRegisterRootDevice4(const char *DescUrl,
 	ListInit(&HInfo->SsdpSearchList, NULL, NULL);
 	HInfo->ClientSubList = NULL;
 	#endif /* INCLUDE_CLIENT_APIS */
-	HInfo->MaxSubscriptions = UPNP_INFINITE;
+	HInfo->MaxSubscriptions = DEFAULT_MAX_SUBSCRIPTIONS;
 	HInfo->MaxSubscriptionTimeOut = UPNP_INFINITE;
 	HInfo->DeviceAf = AddressFamily;
 	retVal = UpnpDownloadXmlDoc(HInfo->DescURL, &(HInfo->DescDocument));
@@ -1582,7 +1582,7 @@ int UpnpRegisterClient(
 	ListInit(&HInfo->SsdpSearchList, NULL, NULL);
 	#ifdef INCLUDE_DEVICE_APIS
 	HInfo->MaxAge = 0;
-	HInfo->MaxSubscriptions = UPNP_INFINITE;
+	HInfo->MaxSubscriptions = DEFAULT_MAX_SUBSCRIPTIONS;
 	HInfo->MaxSubscriptionTimeOut = UPNP_INFINITE;
 	#endif
 	HandleTable[*Hnd] = HInfo;

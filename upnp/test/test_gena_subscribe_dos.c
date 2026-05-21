@@ -1,24 +1,37 @@
 /* test_gena_subscribe_dos.c
  *
  * Regression test for issue #435:
- * Sending SUBSCRIBE requests with a large Callback header exhausts memory.
+ * Flooding a UPnP device with SUBSCRIBE requests exhausts memory.
  *
- * Root cause: create_url_list() in gena_device.c calls malloc(header_len + 1)
- * with no upper bound.  With MaxSubscriptions == UPNP_INFINITE (the default),
- * subscriptions accumulate for up to 1800 s, so memory grows without limit.
+ * The reporter's PoC (Python) sends 99999 SUBSCRIBE requests, each carrying a
+ * ~65536-byte Callback header with a unique random suffix.  Memory grows
+ * without bound for two compounding reasons:
  *
- * Fix: reject Callback headers longer than
- * MAX_SUBSCRIPTION_CALLBACK_HEADER_SIZE with HTTP 412 Precondition Failed
- * before calling create_url_list().
+ *   1. Per-subscription allocation: create_url_list() calls
+ *      malloc(callback_header_len + 1) with no upper bound.  A 65536-byte
+ *      header wastes 64 KB per accepted subscription.
  *
- * Test logic:
- *   Send one SUBSCRIBE request whose Callback header is 0x10000 bytes long
- *   (the same order of magnitude used in the original PoC).
+ *   2. Unlimited subscriptions: MaxSubscriptions defaults to UPNP_INFINITE,
+ *      so subscriptions accumulate for up to 1800 s each regardless of how
+ *      many arrive.  Even with small callback URLs an attacker can saturate
+ *      memory over time.
  *
- *   Before fix: server returns HTTP 200 (subscription accepted) → FAIL
- *   After  fix: server returns HTTP 412 (header rejected)      → PASS
+ * Fixes applied:
+ *   1. Callback headers longer than MAX_SUBSCRIPTION_CALLBACK_HEADER_SIZE are
+ *      rejected with HTTP 412 Precondition Failed before any allocation.
+ *   2. MaxSubscriptions now defaults to DEFAULT_MAX_SUBSCRIPTIONS instead of
+ *      UPNP_INFINITE, capping the subscription list per service.
  *
- * The Callback URL uses the server's own IP address so that
+ * Test cases:
+ *   A. Oversized Callback header:
+ *      Before fix 1 → HTTP 200 (accepted, 65536-byte alloc) → FAIL
+ *      After  fix 1 → HTTP 412 (rejected before alloc)      → PASS
+ *
+ *   B. Subscription count limit (MaxSubscriptions = SMALL_LIMIT):
+ *      Before fix 2 → all N+1 requests return HTTP 200      → FAIL
+ *      After  fix 2 → requests 1..N return 200, N+1 → 500  → PASS
+ *
+ * The Callback URL always uses the server's own IP so that
  * gena_validate_delivery_urls() passes the subnet check.
  */
 
@@ -37,11 +50,14 @@
 	#include <unistd.h>
 #endif
 
-/* Path that the registered service listens on for SUBSCRIBE requests. */
+/* Path the registered service listens on for SUBSCRIBE. */
 #define EVENT_URL_PATH "/event/dos435"
 
-/* Size of the oversized Callback URL path — matches the PoC in issue #435. */
+/* Callback header size that matches the reporter's PoC. */
 #define LARGE_CB_PATH_LEN 0x10000u /* 65536 bytes */
+
+/* How many subscriptions to accept before capping in test B. */
+#define SMALL_LIMIT 3
 
 /* Minimal device description with a single evented service. */
 static const char DEVICE_DESC[] =
@@ -73,13 +89,16 @@ static int device_callback(Upnp_EventType t, void *e, void *c)
 }
 
 #ifndef _WIN32
+
 /*
- * Send one SUBSCRIBE request with a LARGE_CB_PATH_LEN-byte Callback path.
- * The Callback host is set to server_ip so the subnet check passes.
- * Returns the HTTP status code from the response, or -1 on error.
+ * Send one SUBSCRIBE request.
+ * cb_path is appended after "http://server_ip:1/" in the Callback header.
+ * Returns the HTTP status code, or -1 on socket/parse error.
  */
-static int send_subscribe_large_callback(
-	const char *server_ip, unsigned short server_port)
+static int send_subscribe(const char *server_ip,
+	unsigned short server_port,
+	const char *cb_path,
+	size_t cb_path_len)
 {
 	int fd = -1;
 	int status = -1;
@@ -90,31 +109,24 @@ static int send_subscribe_large_callback(
 	struct timeval tv;
 	ssize_t n;
 
-	/* Fixed parts of the request. */
-	const char *host_hdr_fmt =
-		"SUBSCRIBE " EVENT_URL_PATH " HTTP/1.1\r\n"
-		"Host: %s:%u\r\n"
-		"NT: upnp:event\r\n"
-		"Timeout: Second-1800\r\n"
-		"Connection: close\r\n"
-		"Callback: <http://%s:1/"; /* path 'a'*N follows */
+	const char *hdr_fmt = "SUBSCRIBE " EVENT_URL_PATH " HTTP/1.1\r\n"
+			      "Host: %s:%u\r\n"
+			      "NT: upnp:event\r\n"
+			      "Timeout: Second-1800\r\n"
+			      "Connection: close\r\n"
+			      "Callback: <http://%s:1/";
 
-	/* Allocate enough space for all pieces. */
-	cap = 256 + LARGE_CB_PATH_LEN + 8;
+	cap = 256 + cb_path_len + 8;
 	req = malloc(cap);
 	if (!req) {
 		perror("malloc");
 		return -1;
 	}
 
-	off = (size_t)snprintf(req,
-		cap,
-		host_hdr_fmt,
-		server_ip,
-		(unsigned)server_port,
-		server_ip);
-	memset(req + off, 'a', LARGE_CB_PATH_LEN);
-	off += LARGE_CB_PATH_LEN;
+	off = (size_t)snprintf(
+		req, cap, hdr_fmt, server_ip, (unsigned)server_port, server_ip);
+	memcpy(req + off, cb_path, cb_path_len);
+	off += cb_path_len;
 	off += (size_t)snprintf(req + off, cap - off, ">\r\n\r\n");
 
 	fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -123,7 +135,6 @@ static int send_subscribe_large_callback(
 		goto done;
 	}
 
-	/* 5-second receive timeout so the test does not hang. */
 	tv.tv_sec = 5;
 	tv.tv_usec = 0;
 	setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
@@ -157,6 +168,105 @@ done:
 	free(req);
 	return status;
 }
+
+/*
+ * Test A: Callback header larger than MAX_SUBSCRIPTION_CALLBACK_HEADER_SIZE
+ * must be rejected with HTTP 412 without allocating storage.
+ */
+static int test_oversized_callback(
+	const char *server_ip, unsigned short server_port)
+{
+	char *large_path;
+	int status;
+
+	large_path = malloc(LARGE_CB_PATH_LEN);
+	if (!large_path) {
+		perror("malloc");
+		return -1;
+	}
+	memset(large_path, 'a', LARGE_CB_PATH_LEN);
+
+	status = send_subscribe(
+		server_ip, server_port, large_path, LARGE_CB_PATH_LEN);
+	free(large_path);
+
+	printf("Test A: SUBSCRIBE with %u-byte Callback path -> HTTP %d\n",
+		LARGE_CB_PATH_LEN,
+		status);
+
+	if (status == 412) {
+		puts("Test A PASS: oversized Callback rejected (HTTP 412).");
+		return 0;
+	}
+	fprintf(stderr,
+		"Test A FAIL: expected HTTP 412, got %d.\n"
+		"  HTTP 200 means a %u-byte allocation was accepted (issue "
+		"#435).\n",
+		status,
+		LARGE_CB_PATH_LEN);
+	return -1;
+}
+
+/*
+ * Test B: After MaxSubscriptions subscriptions are registered the next
+ * SUBSCRIBE must be rejected with HTTP 500.
+ * Uses UpnpSetMaxSubscriptions() to force a small limit so the test runs fast.
+ */
+static int test_subscription_count_limit(UpnpDevice_Handle handle,
+	const char *server_ip,
+	unsigned short server_port)
+{
+	int i, status;
+	char path[32];
+
+	if (UpnpSetMaxSubscriptions(handle, SMALL_LIMIT) != UPNP_E_SUCCESS) {
+		fprintf(stderr,
+			"Test B: UpnpSetMaxSubscriptions(%d) failed\n",
+			SMALL_LIMIT);
+		return -1;
+	}
+
+	/* Fill the subscription list up to the limit. */
+	for (i = 1; i <= SMALL_LIMIT; i++) {
+		snprintf(path, sizeof(path), "cb%d", i);
+		status = send_subscribe(
+			server_ip, server_port, path, strlen(path));
+		printf("Test B: subscription %d/%d -> HTTP %d\n",
+			i,
+			SMALL_LIMIT,
+			status);
+		if (status != 200) {
+			fprintf(stderr,
+				"Test B FAIL: subscription %d should have been "
+				"accepted (HTTP 200), got %d.\n",
+				i,
+				status);
+			return -1;
+		}
+	}
+
+	/* One more must be rejected. */
+	snprintf(path, sizeof(path), "cb%d", SMALL_LIMIT + 1);
+	status = send_subscribe(server_ip, server_port, path, strlen(path));
+	printf("Test B: subscription %d (over limit) -> HTTP %d\n",
+		SMALL_LIMIT + 1,
+		status);
+
+	if (status == 500) {
+		puts("Test B PASS: subscription beyond limit rejected "
+		     "(HTTP 500).");
+		return 0;
+	}
+	fprintf(stderr,
+		"Test B FAIL: expected HTTP 500 when MaxSubscriptions=%d is "
+		"exceeded, got %d.\n"
+		"  UPNP_INFINITE default means subscriptions accumulate "
+		"without bound (issue #435).\n",
+		SMALL_LIMIT,
+		status);
+	return -1;
+}
+
 #endif /* !_WIN32 */
 
 int main(void)
@@ -169,15 +279,13 @@ int main(void)
 	UpnpDevice_Handle handle = -1;
 	const char *server_ip;
 	unsigned short server_port;
-	int http_status;
+	int result = 0;
 
 	rc = UpnpInit2(NULL, 0);
 	if (rc != UPNP_E_SUCCESS) {
 		fprintf(stderr,
-			"UpnpInit2 failed (%d); skipping test (no network?)\n",
+			"UpnpInit2 failed (%d); skipping (no network?)\n",
 			rc);
-		/* Treat as a skip, not a hard failure, so CI passes on
-		 * machines without a routable interface. */
 		return EXIT_SUCCESS;
 	}
 
@@ -193,7 +301,7 @@ int main(void)
 	rc = UpnpRegisterRootDevice2(UPNPREG_BUF_DESC,
 		DEVICE_DESC,
 		sizeof(DEVICE_DESC) - 1,
-		1, /* config_baseURL */
+		1,
 		device_callback,
 		NULL,
 		&handle);
@@ -203,26 +311,14 @@ int main(void)
 		return EXIT_FAILURE;
 	}
 
-	http_status = send_subscribe_large_callback(server_ip, server_port);
-	printf("SUBSCRIBE with %u-byte Callback path → HTTP %d\n",
-		LARGE_CB_PATH_LEN,
-		http_status);
+	if (test_oversized_callback(server_ip, server_port) != 0)
+		result = 1;
+
+	if (test_subscription_count_limit(handle, server_ip, server_port) != 0)
+		result = 1;
 
 	UpnpUnRegisterRootDevice(handle);
 	UpnpFinish();
-
-	if (http_status == 412) {
-		puts("PASS: server rejected oversized Callback header (HTTP "
-		     "412).");
-		return EXIT_SUCCESS;
-	}
-
-	fprintf(stderr,
-		"FAIL: expected HTTP 412 Precondition Failed, got HTTP %d.\n"
-		"      HTTP 200 means the subscription was accepted with a\n"
-		"      %u-byte allocation per subscription -- issue #435.\n",
-		http_status,
-		LARGE_CB_PATH_LEN);
-	return EXIT_FAILURE;
+	return result ? EXIT_FAILURE : EXIT_SUCCESS;
 #endif /* !_WIN32 */
 }

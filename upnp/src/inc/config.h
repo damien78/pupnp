@@ -148,6 +148,21 @@
 #define MAX_SUBSCRIPTION_CALLBACK_HEADER_SIZE 5000
 /* @} */
 
+/*! \name DEFAULT_MAX_SUBSCRIPTIONS
+ *
+ *  The {\tt DEFAULT_MAX_SUBSCRIPTIONS} constant sets the default limit on the
+ *  number of simultaneous GENA subscriptions per service.  An attacker can
+ *  exhaust memory by flooding a service with SUBSCRIBE requests that each
+ *  create a unique subscription; with no limit subscriptions accumulate for
+ *  up to 1800 s each (issue #435).  Device applications may override this
+ *  per-handle with {\tt UpnpSetMaxSubscriptions()}.  The value 50 is generous
+ *  for any legitimate UPnP deployment.
+ *
+ * @{
+ */
+#define DEFAULT_MAX_SUBSCRIPTIONS 50
+/* @} */
+
 /*! \name MAX_SUBSCRIPTION_QUEUED_EVENTS
  *
  *  The {\tt MAX_SUBSCRIPTION_QUEUED_EVENTS} determines the maximum number of
