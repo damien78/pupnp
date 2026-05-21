@@ -3,6 +3,34 @@ UPNP_Add_Unit_Test(test-upnp-init test_init.c)
 UPNP_Add_Unit_Test(test-upnp-log test_log.c)
 UPNP_Add_Unit_Test(test-upnp-url test_url.c)
 UPNP_Add_Unit_Test(test-upnp-gena-subscribe-dos test_gena_subscribe_dos.c)
+UPNP_Add_Unit_Test(test-upnp-gena-subscribe-pressure test_gena_subscribe_pressure.c)
+# Both GENA issue-#435 tests read constants from config.h (a private header).
+if(UPNP_BUILD_SHARED)
+	target_include_directories(
+		test-upnp-gena-subscribe-dos
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src/inc
+	)
+	target_include_directories(
+		test-upnp-gena-subscribe-pressure
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src/inc
+	)
+	target_link_libraries(
+		test-upnp-gena-subscribe-pressure PRIVATE Threads::Threads
+	)
+endif()
+if(UPNP_BUILD_STATIC)
+	target_include_directories(
+		test-upnp-gena-subscribe-dos-static
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src/inc
+	)
+	target_include_directories(
+		test-upnp-gena-subscribe-pressure-static
+		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src/inc
+	)
+	target_link_libraries(
+		test-upnp-gena-subscribe-pressure-static PRIVATE Threads::Threads
+	)
+endif()
 
 # On Solaris/illumos, getaddrinfo and freeaddrinfo live in libsocket (and
 # sometimes libnsl) rather than in the C library.  find_library() probes for
