@@ -960,7 +960,7 @@ static void RunMiniServer(
 	++maxMiniSock;
 	#else  /* _WIN32 */
 	struct pollfd fds[MINI_SERVER_MAX_PFDS];
-	int nfds = 0;
+	nfds_t nfds = 0;
 	#endif /* _WIN32 */
 
 	gMServState = MSERV_RUNNING;

@@ -54,10 +54,8 @@
 		#include "ThreadPool.h"
 		#include "UpnpInet.h"
 		#include "httpparser.h"
-		#include "httpreadwrite.h"
 		#include "ssdplib.h"
 		#include "statcodes.h"
-		#include "unixutil.h"
 		#include "upnpapi.h"
 
 		#include <stdio.h>
@@ -769,7 +767,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 		#else /* _WIN32 */
 	{
 		struct pollfd fds[2];
-		int nfds = 0;
+		nfds_t nfds = 0;
 
 		if (gSsdpReqSocket4 != INVALID_SOCKET) {
 			setsockopt(gSsdpReqSocket4,
@@ -821,7 +819,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 					ReqBufv6UlaGua);
 				sendto(gSsdpReqSocket6,
 					ReqBufv6UlaGua,
-					(int)strlen(ReqBufv6UlaGua),
+					strlen(ReqBufv6UlaGua),
 					0,
 					(struct sockaddr *)&__ss_v6,
 					sizeof(struct sockaddr_in6));
@@ -840,7 +838,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 					ReqBufv6);
 				sendto(gSsdpReqSocket6,
 					ReqBufv6,
-					(int)strlen(ReqBufv6),
+					strlen(ReqBufv6),
 					0,
 					(struct sockaddr *)&__ss_v6,
 					sizeof(struct sockaddr_in6));
@@ -860,7 +858,7 @@ int SearchByTarget(int Hnd, int Mx, char *St, void *Cookie)
 					ReqBufv4);
 				sendto(gSsdpReqSocket4,
 					ReqBufv4,
-					(int)strlen(ReqBufv4),
+					strlen(ReqBufv4),
 					0,
 					(struct sockaddr *)&__ss_v4,
 					sizeof(struct sockaddr_in));

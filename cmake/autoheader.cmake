@@ -4,6 +4,12 @@ if(NOT PUPNP_VERSION_STRING)
 	list(APPEND MACRO_FILES ${CMAKE_CURRENT_SOURCE_DIR}/configure.ac)
 	list(APPEND WRITTEN_VARS DEBUG)
 	list(APPEND WRITTEN_VARS NDEBUG)
+	# These are defined in upnpconfig.h (public API); exclude from autoconfig.h
+	# to avoid redefinition warnings when upnpconfig.h is included first.
+	list(APPEND WRITTEN_VARS UPNP_VERSION_STRING)
+	list(APPEND WRITTEN_VARS UPNP_VERSION_MAJOR)
+	list(APPEND WRITTEN_VARS UPNP_VERSION_MINOR)
+	list(APPEND WRITTEN_VARS UPNP_VERSION_PATCH)
 
 	foreach(MACRO_FILE ${MACRO_FILES})
 		file(STRINGS ${MACRO_FILE} configure)

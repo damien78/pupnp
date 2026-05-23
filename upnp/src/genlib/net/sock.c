@@ -40,12 +40,9 @@
  * \brief Implements the sockets functionality.
  */
 
-#include "config.h"
-
 #include "sock.h"
 
-#include "UpnpStdInt.h" /* for ssize_t */
-#include "unixutil.h"	/* for socklen_t, EAFNOSUPPORT */
+#include "UpnpStdInt.h" /* ssize_t on MSVC */ // IWYU pragma: keep
 #include "upnp.h"
 
 #include "upnpdebug.h"
@@ -248,10 +245,13 @@ static int sock_read_write(SOCKINFO *info,
 			} else {
 #endif
 				/* read data. */
-				numBytes = (long)recv(sockfd,
-					buffer,
-					(int)bufsize,
-					MSG_NOSIGNAL);
+				/* clang-format off */
+#ifdef _WIN32
+				numBytes = (long)recv(sockfd, buffer, (int)bufsize, MSG_NOSIGNAL);
+#else
+				numBytes = (long)recv(sockfd, buffer, bufsize, MSG_NOSIGNAL);
+#endif
+				/* clang-format on */
 #ifdef UPNP_ENABLE_OPEN_SSL
 			}
 #endif
