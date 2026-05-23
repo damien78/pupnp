@@ -28,8 +28,7 @@ env:
     -DBUILD_TESTING=ON \
     -DDOWNLOAD_AND_BUILD_DEPS=ON \
     -DUPNP_ENABLE_OPEN_SSL=ON \
-    -DUPNP_ENABLE_UNSPECIFIED_SERVER=ON \
-    -DUPNP_ENABLE_BLOCKING_TCP_CONNECTIONS=ON
+    -DUPNP_ENABLE_UNSPECIFIED_SERVER=ON
 
   cmake_sanitizer_flags: |-
     -DCMAKE_C_FLAGS="-fsanitize=address,leak" \
@@ -50,6 +49,14 @@ jobs:
       matrix:
         os: [ ubuntu-latest ]
         conf: [ Debug, Release ]
+        include:
+          # Debug builds enable _FORTIFY_SOURCE=2 to catch buffer-overflow
+          # bugs such as FD_SET with fd >= FD_SETSIZE (issue #423).
+          # -O1 is required: _FORTIFY_SOURCE is a no-op at -O0.
+          - conf: Debug
+            extra_c_flags: " -O1 -D_FORTIFY_SOURCE=2"
+          - conf: Release
+            extra_c_flags: ""
       fail-fast: false
     steps:
       - uses: actions/checkout@v6
@@ -57,7 +64,7 @@ jobs:
         run: |
           cmake \
             ${{ env.cmake_common_flags }} \
-            -DCMAKE_C_FLAGS="-Wall -Wpedantic" \
+            -DCMAKE_C_FLAGS="-Wall -Wpedantic${{ matrix.extra_c_flags }}" \
             -DCMAKE_BUILD_TYPE=${{ matrix.conf }} \
             -DCMAKE_INSTALL_PREFIX=${{ GITHUB.WORKSPACE }}/test-install
       - name: Build
