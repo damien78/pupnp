@@ -248,10 +248,13 @@ static int sock_read_write(SOCKINFO *info,
 			} else {
 #endif
 				/* read data. */
-				numBytes = (long)recv(sockfd,
-					buffer,
-					(int)bufsize,
-					MSG_NOSIGNAL);
+				/* clang-format off */
+#ifdef _WIN32
+				numBytes = (long)recv(sockfd, buffer, (int)bufsize, MSG_NOSIGNAL);
+#else
+				numBytes = (long)recv(sockfd, buffer, bufsize, MSG_NOSIGNAL);
+#endif
+				/* clang-format on */
 #ifdef UPNP_ENABLE_OPEN_SSL
 			}
 #endif
