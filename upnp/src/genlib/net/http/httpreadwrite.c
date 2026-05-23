@@ -104,22 +104,15 @@ const int CHUNK_TAIL_SIZE = 10;
  */
 static int Check_Connect_And_Wait_Connection(SOCKET sock, int connect_res)
 {
-	struct timeval tmvTimeout = {DEFAULT_TCP_CONNECT_TIMEOUT, 0};
 	int result;
-	#ifdef _WIN32
-	struct fd_set fdSet;
-	#else
-	fd_set fdSet;
-	#endif
-	FD_ZERO(&fdSet);
-	FD_SET(sock, &fdSet);
 
 	if (connect_res < 0) {
 	#ifdef _WIN32
+		struct fd_set fdSet;
+		struct timeval tmvTimeout = {DEFAULT_TCP_CONNECT_TIMEOUT, 0};
+		FD_ZERO(&fdSet);
+		FD_SET(sock, &fdSet);
 		if (WSAEWOULDBLOCK == WSAGetLastError()) {
-	#else
-		if (EINPROGRESS == errno) {
-	#endif
 			result = select(
 				(int)sock + 1, NULL, &fdSet, NULL, &tmvTimeout);
 			if (result < 0) {
@@ -127,7 +120,23 @@ static int Check_Connect_And_Wait_Connection(SOCKET sock, int connect_res)
 			} else if (result == 0) {
 				/* timeout */
 				return -1;
-	#ifndef _WIN32
+			}
+		}
+	#else
+		/* Use poll() instead of select()/FD_SET() to avoid the
+		 * FD_SETSIZE (1024) limit: FD_SET with fd >= FD_SETSIZE
+		 * overflows the bitmap. */
+		if (EINPROGRESS == errno) {
+			struct pollfd pfd;
+			pfd.fd = (int)sock;
+			pfd.events = POLLOUT;
+			result = _poll(
+				&pfd, 1, DEFAULT_TCP_CONNECT_TIMEOUT * 1000);
+			if (result < 0) {
+				return -1;
+			} else if (result == 0) {
+				/* timeout */
+				return -1;
 			} else {
 				int valopt = 0;
 				socklen_t len = sizeof(valopt);
@@ -142,9 +151,9 @@ static int Check_Connect_And_Wait_Connection(SOCKET sock, int connect_res)
 					/* delayed error = valopt */
 					return -1;
 				}
-	#endif
 			}
 		}
+	#endif
 	}
 
 	return 0;
