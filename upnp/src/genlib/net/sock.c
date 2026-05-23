@@ -40,12 +40,9 @@
  * \brief Implements the sockets functionality.
  */
 
-#include "config.h"
-
 #include "sock.h"
 
-#include "UpnpStdInt.h" /* for ssize_t */
-#include "unixutil.h"	/* for socklen_t, EAFNOSUPPORT */
+#include "UpnpStdInt.h" /* ssize_t on MSVC */ // IWYU pragma: keep
 #include "upnp.h"
 
 #include "upnpdebug.h"
