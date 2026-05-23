@@ -11,6 +11,7 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-debug --enable-samples
 SUBDIRS = \
 	ixml \
 	upnp \
+	samples \
 	docs
 
 EXTRA_DIST = \
@@ -48,9 +49,10 @@ EXTRA_DIST = \
 	ixml/test/CMakeLists.txt \
 	upnp/CMakeLists.txt \
 	upnp/test/CMakeLists.txt \
-	upnp/sample/CMakeLists.txt \
+	samples/CMakeLists.txt \
+	samples/tv/CMakeLists.txt \
 	upnp/inc/upnpconfig.h.cm \
-	upnp/sample/common/config_sample.h.cm \
+	samples/tv/common/config_sample.h.cm \
 	libupnp.pc.in \
 	libupnp.spec \
 	.gitignore
