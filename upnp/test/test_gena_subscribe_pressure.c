@@ -195,7 +195,24 @@ int main(void)
 
 	signal(SIGPIPE, SIG_IGN);
 
-	rc = UpnpInit2(NULL, 0);
+	/* Bind explicitly to loopback rather than NULL (all interfaces).
+	 *
+	 * When NULL is used, UpnpGetServerIpAddress() returns the runner's
+	 * real IP (e.g. 10.x.x.x on cloud CI).  health_check() then sends a
+	 * SUBSCRIBE with "Callback: <http://10.x.x.x:1/healthcheck>".  On
+	 * subscription acceptance the UPnP stack immediately fires a NOTIFY
+	 * to that callback URL, which means private_connect() opens a
+	 * non-blocking TCP socket to 10.x.x.x:1.  On cloud CI the SYN is
+	 * silently dropped by the network (no RST), so poll() waits for the
+	 * full DEFAULT_TCP_CONNECT_TIMEOUT (5 s) before giving up.
+	 * UpnpFinish() then blocks waiting for the NOTIFY thread, pushing
+	 * the test over the 5-second ctest budget.
+	 *
+	 * With "127.0.0.1", server_ip is always 127.0.0.1, the NOTIFY goes
+	 * to 127.0.0.1:1, and the loopback stack returns RST immediately
+	 * (nothing is listening on port 1), so poll() returns in
+	 * microseconds. */
+	rc = UpnpInit2("127.0.0.1", 0);
 	if (rc != UPNP_E_SUCCESS) {
 		fprintf(stderr,
 			"UpnpInit2 failed (%d); skipping (no network?)\n",

@@ -118,6 +118,24 @@ if(UPNP_BUILD_STATIC)
 	)
 endif()
 
+# Issue #423: crash when socket fd >= FD_SETSIZE due to FD_SET overflow in
+# Check_Connect_And_Wait_Connection().  The fix uses poll() on non-Windows.
+UPNP_Add_Unit_Test(test-upnp-connect-high-fd test_connect_high_fd.c)
+if(UPNP_BUILD_SHARED)
+	target_link_libraries(test-upnp-connect-high-fd PRIVATE
+		Threads::Threads
+		$<$<BOOL:${SOCKET_LIBRARY}>:${SOCKET_LIBRARY}>
+		$<$<BOOL:${NSL_LIBRARY}>:${NSL_LIBRARY}>
+	)
+endif()
+if(UPNP_BUILD_STATIC)
+	target_link_libraries(test-upnp-connect-high-fd-static PRIVATE
+		Threads::Threads
+		$<$<BOOL:${SOCKET_LIBRARY}>:${SOCKET_LIBRARY}>
+		$<$<BOOL:${NSL_LIBRARY}>:${NSL_LIBRARY}>
+	)
+endif()
+
 if(UPNP_BUILD_SHARED)
 	add_executable(
 		test-upnp-parse-uri
