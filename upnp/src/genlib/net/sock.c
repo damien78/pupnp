@@ -241,7 +241,7 @@ static int sock_read_write(SOCKINFO *info,
 #ifdef UPNP_ENABLE_OPEN_SSL
 			if (info->ssl) {
 				numBytes = (long)SSL_read(
-					info->ssl, buffer, bufsize);
+					info->ssl, buffer, (int)bufsize);
 			} else {
 #endif
 				/* read data. */
@@ -263,7 +263,7 @@ static int sock_read_write(SOCKINFO *info,
 				if (info->ssl) {
 					num_written = SSL_write(info->ssl,
 						buffer + bytes_sent,
-						byte_left);
+						(int)byte_left);
 				} else {
 #endif
 					/* write data. */
