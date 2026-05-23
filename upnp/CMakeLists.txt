@@ -3,10 +3,6 @@ if(MSVC)
 	set(WIN_PREFIX "lib")
 endif()
 
-if(UPNP_BUILD_SAMPLES)
-	add_subdirectory(sample)
-endif()
-
 set(UPNP_SOURCES
 	src/api/upnpapi.c
 	src/api/upnpdebug.c

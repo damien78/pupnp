@@ -484,7 +484,7 @@ AC_CANONICAL_HOST
 #    libraries : it contains information on the configuration of the
 #    installed libraries.
 #
-AC_CONFIG_HEADERS([autoconfig.h upnp/inc/upnpconfig.h upnp/sample/common/config_sample.h])
+AC_CONFIG_HEADERS([autoconfig.h upnp/inc/upnpconfig.h samples/tv/common/config_sample.h])
 AX_SYS_LARGEFILE_SENSITIVE
 
 if test "x$ac_cv_sys_largefile_sensitive" = "xyes"; then
@@ -602,7 +602,7 @@ if test "x$enable_reuseaddr" = xyes ; then
         AC_DEFINE(UPNP_MINISERVER_REUSEADDR, 1, [see upnpconfig.h])
 fi
 
-RT_BOOL_ARG_ENABLE([samples], [yes], [compilation of upnp/sample/ code])
+RT_BOOL_ARG_ENABLE([samples], [yes], [compilation of samples/ code])
 
 #
 # Checks for programs
@@ -839,7 +839,8 @@ AC_CONFIG_FILES([
 	docs/Makefile
 	ixml/Makefile
 	upnp/Makefile
-	upnp/sample/Makefile
+	samples/Makefile
+	samples/tv/Makefile
 	libupnp.pc
 	])
 

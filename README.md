@@ -27,6 +27,7 @@ See [LICENSE](site/LICENSE) for details.
 - [2. General Information](#2-general-information)
 - [3. Changelog](#3-changelog)
 - [4. Documentation](#4-documentation)
+  - [4.1. Quick Start](#41-quick-start)
 - [5. Other projects that are using the SDK](#5-other-projects-that-are-using-the-sdk)
 - [6. License Conditions](#6-license-conditions)
 - [7. Release List](#7-release-list)
@@ -68,6 +69,12 @@ support further development. This way, the project now continues using the name 
 ## 4. Documentation
 
 Documentation is available in PDF format from the [downloads](http://sourceforge.net/project/showfiles.php?group_id=166957) section. The documentation actually resides inside the source code itself and is built into the PDF file by an automated process using [Doxygen](https://www.doxygen.nl). Documentation for each function resides in a comment section immediately preceding the function.
+
+### 4.1. Quick Start
+
+For a minimal, standalone example of how to use libupnp with CMake — independent of the repository's own build system — see the community-maintained **[libupnp_example](https://github.com/Zapunidi/libupnp_example)** project. It demonstrates a simple SSDP client and shows how to write a `CMakeLists.txt` that uses `find_package(upnp)` to link against an installed copy of the library. It has been tested on Linux and Windows.
+
+For a fuller reference covering a complete UPnP device and control point, see the [`samples/tv`](samples/tv) directory in this repository.
 
 ## 5. Other projects that are using the SDK
 
@@ -214,7 +221,7 @@ The SDK for UPnP Devices contains the following:
 | upnp/doc    | The files for generating the SDK documentation from the source code.              |
 | upnp/inc    | The public include files required to use the SDK.                                 |
 | upnp/src    | The source files comprising the SDK, libupnp.so.                                  |
-| upnp/sample | A sample device and control point application, illustrating the usage of the SDK. |
+| samples/tv  | A sample device and control point application, illustrating the usage of the SDK. |
 
 ## 9. System Requirements
 
@@ -369,22 +376,37 @@ This will invoke the "arm-linux-gcc" cross compiler to build the library.
 
 ### 10.4. Samples
 
-The SDK contains two samples: a TV device application and a control point that talks with the TV device.  They are found in the $(LIBUPNP)/upnp/sample directory.
+The SDK contains two samples: a TV device application and a control point that talks with the TV device.  They are found in the `samples/tv` directory.
 
-To build the samples (note: this is the default behavior):
+#### Autotools
+
+Samples are built by default. To build them explicitly:
 
 ```bash
 % ./configure --enable-samples
 % make
 ```
 
-will build the sample device "$(LIBUPNP)/upnp/tv_device" and sample control point "$(LIBUPNP)/upnp/tv_ctrlpt". Note : the sample device won't be built if --disable-device has been configured, and the sample control point won't be build if --disable-client has been configured.
+This builds `tv_device`, `tv_ctrlpt`, and `tv_combo` inside the `samples/tv` subdirectory of the build tree. The sample device won't be built if `--disable-device` was given, and the control point won't be built if `--disable-client` was given.
 
-To run the sample device, you need to create a tvdevice directory and move the web directory there, giving: "$(LIBUPNP)/upnp/sample/tvdevice/web". To run the sample invoke from the command line as follows:
+#### CMake
 
 ```bash
-% cd ./upnp/sample/tvdevice
-% ../tv_device
+% cmake -S . -B build -DUPNP_BUILD_SAMPLES=ON
+% cmake --build build
+```
+
+The binaries are placed in `build/samples/tv/`.
+
+#### Running the TV device sample
+
+Copy the web XML files to a `tvdevice/web` directory alongside the binary, then run:
+
+```bash
+% mkdir -p tvdevice/web
+% cp samples/tv/web/* tvdevice/web/
+% cd tvdevice
+% ../build/samples/tv/tv_device    # adjust path for autotools builds
 ```
 
 ### 10.5. Solaris Build
