@@ -208,7 +208,7 @@ static int getNumericHostRedirection(
 	struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *)&addr;
 	socklen_t addr_len = sizeof addr;
 	in_port_t port;
-	char host[NAME_SIZE];
+	char host[INET6_ADDRSTRLEN];
 	int n;
 
 	rc = getsockname(socket, (struct sockaddr *)&addr, &addr_len);

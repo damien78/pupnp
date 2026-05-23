@@ -196,7 +196,14 @@ static UPNP_INLINE int calc_descURL(
 	      (size_t)1;
 	if (len > (size_t)LINE_SIZE)
 		return UPNP_E_URL_TOO_BIG;
-	snprintf(descURL, len, "%s%s%s", http_scheme, ipPortStr, alias);
+		/* len <= LINE_SIZE verified above; GCC cannot prove it
+		 * statically */
+		/* clang-format off */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+	snprintf(descURL, LINE_SIZE, "%s%s%s", http_scheme, ipPortStr, alias);
+#pragma GCC diagnostic pop
+	/* clang-format on */
 	UpnpPrintf(
 		UPNP_INFO, API, __FILE__, __LINE__, "desc url: %s\n", descURL);
 
