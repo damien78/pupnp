@@ -7,12 +7,20 @@ permissions:
 on:
   push:
     branches:
-      - "**"
-      - "!no_ci-*"
+      - main
+      - "branch-*"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "COPYING"
   pull_request:
     branches:
       - "**"
       - "!no_ci-*"
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "COPYING"
 
 #
 # Some repeated stuff
