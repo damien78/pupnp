@@ -18,8 +18,25 @@ if(NOT _pytest_result EQUAL 0)
 endif()
 
 add_test(
-	NAME test-invariant-tv-device
+	NAME test-init-py
 	COMMAND ${Python3_EXECUTABLE} -m pytest
-		${CMAKE_CURRENT_SOURCE_DIR}/test_invariant_tv_device.py
+		${CMAKE_CURRENT_SOURCE_DIR}/test_init.py
 		-v
+)
+
+set(_test_init_py_env "UPNP_BUILD_DIR=${CMAKE_BINARY_DIR}")
+if(CMAKE_C_FLAGS MATCHES "sanitize=address" OR
+		CMAKE_SHARED_LINKER_FLAGS MATCHES "sanitize=address")
+	execute_process(
+		COMMAND ${CMAKE_C_COMPILER} -print-file-name=libasan.so
+		OUTPUT_VARIABLE _asan_path
+		OUTPUT_STRIP_TRAILING_WHITESPACE
+	)
+	if(_asan_path AND NOT _asan_path STREQUAL "libasan.so")
+		list(APPEND _test_init_py_env "LD_PRELOAD=${_asan_path}")
+	endif()
+endif()
+
+set_tests_properties(test-init-py PROPERTIES
+	ENVIRONMENT "${_test_init_py_env}"
 )
