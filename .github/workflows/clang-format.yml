@@ -1,6 +1,24 @@
 name: lint-clang-format
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches:
+      - main
+      - "branch-*"
+    paths:
+      - "**.c"
+      - "**.cpp"
+      - "**.h"
+      - "**.hpp"
+  pull_request:
+    branches:
+      - "**"
+      - "!no_ci-*"
+    paths:
+      - "**.c"
+      - "**.cpp"
+      - "**.h"
+      - "**.hpp"
 
 permissions:
   contents: read
