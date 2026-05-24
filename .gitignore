@@ -167,3 +167,4 @@ UPNPConfigVersion.cmake
 # Fuzzer
 fuzzer_testcases
 
+__pycache__
