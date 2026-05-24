@@ -5,7 +5,7 @@ on:
   push:
     tags:
       - "release-*"
-# on: workflow_dispatch
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -29,6 +29,8 @@ jobs:
         uses: actions/checkout@v6
       - name: Preparation
         # Prepare some useful environment variables
+        env:
+          TAG_NAME: ${{ github.ref_name }}
         run: |
           #
           # Parse the tag name
@@ -40,13 +42,12 @@ jobs:
           # This is for starting the workflow manually, in which case
           # github.ref_name will be undefined.
           git branch >> "$GITHUB_STEP_SUMMARY"
-          TAG_NAME=${{ github.ref_name }}
           if [[ $DEBUG == "n" && -z $TAG_NAME ]]; then
             echo "Tag name is empty" >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
           # Parse the tag name and calculate the next release value
-          DEBUG=${DEBUG} scripts/parse_release.sh $TAG_NAME
+          DEBUG=${DEBUG} scripts/parse_release.sh "$TAG_NAME"
       - name: Configure
         if: ${{ env.RUN_CONFIGURE == 'true' }}
         run: |
@@ -55,6 +56,7 @@ jobs:
       - name: Build
         if: ${{ env.RUN_BUILD == 'true' }}
         id: build
+        timeout-minutes: 5
         #
         # Build and run checks
         run: |
@@ -66,14 +68,14 @@ jobs:
         run: |
           bz2_name=
           DEBUG=${DEBUG} scripts/find_out_bz2_name.sh
-      - name: SHA1
+      - name: SHA256
         #
-        # Calculate the SHA1 checksum
+        # Calculate the SHA256 checksum
         run: |
-          sha1sum ${bz2_name} > ${bz2_name}.sha1
+          sha256sum ${bz2_name} > ${bz2_name}.sha256
           {
             echo '```bash'
-            echo "sha1sum ${bz2_name} > ${bz2_name}.sha1"
+            echo "sha256sum ${bz2_name} > ${bz2_name}.sha256"
             echo bz2_name=${{ steps.find-bz-name.outputs.bz2_name }}
             echo '```'
           } >>  "$GITHUB_STEP_SUMMARY"
@@ -100,9 +102,11 @@ jobs:
           generate_release_notes: true
           files: |
             ${{ steps.find-bz-name.outputs.bz2_name }}
-            ${{ steps.find-bz-name.outputs.bz2_name }}.sha1
+            ${{ steps.find-bz-name.outputs.bz2_name }}.sha256
       - name: Home keeping
         if: ${{ env.RUN_HOME_KEEPING  == 'true' }}
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
           #
           # Edit some files
@@ -113,10 +117,10 @@ jobs:
           git config --global user.email 'github_action@users.noreply.github.com'
           # Commit
           git status >> "$GITHUB_STEP_SUMMARY"
-          HOME_KEEPING_BRANCH=${{ github.ref_name }}-home_keeping
+          HOME_KEEPING_BRANCH=${REF_NAME}-home_keeping
           # Create a new branch, since the actual branch might be protected
           git switch -c $HOME_KEEPING_BRANCH
           git add ChangeLog configure.ac docs/Doxyfile libupnp.spec
-          git commit -am "Home keeping for the next release"
+          git commit -m "Home keeping for the next release"
           git status >> "$GITHUB_STEP_SUMMARY"
           git push origin HEAD:$HOME_KEEPING_BRANCH
