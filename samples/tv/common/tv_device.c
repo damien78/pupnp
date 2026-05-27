@@ -1466,8 +1466,8 @@ int TvDeviceStart(char *iface,
 	}
 	switch (address_family) {
 	case AF_INET:
-		/* codeql[cpp/non-https-url] - HTTP is part of the UPnP
-		 * specification */
+		/* HTTP is part of the UPnP specification */
+		/* codeql[cpp/non-https-url] */
 		snprintf(desc_doc_url,
 			DESC_URL_SIZE,
 			"http://%s:%d/%s",
@@ -1476,8 +1476,8 @@ int TvDeviceStart(char *iface,
 			desc_doc_name);
 		break;
 	case AF_INET6:
-		/* codeql[cpp/non-https-url] - HTTP is part of the UPnP
-		 * specification */
+		/* HTTP is part of the UPnP specification */
+		/* codeql[cpp/non-https-url] */
 		snprintf(desc_doc_url,
 			DESC_URL_SIZE,
 			"http://[%s]:%d/%s",
