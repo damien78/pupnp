@@ -187,7 +187,8 @@ static UPNP_INLINE int calc_descURL(
 	const char *ipPortStr, const char *alias, char descURL[LINE_SIZE])
 {
 	size_t len;
-	const char *http_scheme = "http://"; /* lgtm[cpp/non-https-url] */
+	/* codeql[cpp/non-https-url] - HTTP is part of the UPnP specification */
+	const char *http_scheme = "http://";
 
 	assert(ipPortStr != NULL && strlen(ipPortStr) > 0);
 	assert(alias != NULL && strlen(alias) > 0);
