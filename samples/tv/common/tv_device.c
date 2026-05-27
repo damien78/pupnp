@@ -1466,10 +1466,10 @@ int TvDeviceStart(char *iface,
 	}
 	switch (address_family) {
 	case AF_INET:
-		/* HTTP is part of the UPnP specification */
-		/* codeql[cpp/non-https-url] */
 		snprintf(desc_doc_url,
 			DESC_URL_SIZE,
+			/* HTTP is part of the UPnP specification */
+			/* codeql[cpp/non-https-url] */
 			"http://%s:%d/%s",
 			ip_address,
 			port,
