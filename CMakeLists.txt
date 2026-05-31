@@ -1,16 +1,13 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.11)
 CMAKE_POLICY(VERSION 3.13)
 
-# C++14 is required
-# Set here before we create any targets
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 include(cmake/CmDaB.cmake)
 include(cmake/test-functions.cmake)
 include(cmake/autoheader.cmake)
 
-project(PUPNP VERSION ${PUPNP_VERSION_STRING})
+project(PUPNP
+	VERSION ${PUPNP_VERSION_STRING}
+	LANGUAGES C)
 
 include(GNUInstallDirs)
 include(cmake/options.cmake)
@@ -278,7 +275,7 @@ configure_package_config_file(
 )
 
 write_basic_package_version_file(IXMLConfigVersion.cmake
-	VERSION ${IXML_VERSION_STRING}
+	VERSION ${IXML_SOVERSION_STRING}
 	COMPATIBILITY SameMajorVersion
 )
 
@@ -288,7 +285,7 @@ configure_package_config_file(
 )
 
 write_basic_package_version_file(UPNPConfigVersion.cmake
-	VERSION ${UPNP_VERSION_STRING}
+	VERSION ${UPNP_SOVERSION_STRING}
 	COMPATIBILITY SameMajorVersion
 )
 
@@ -331,8 +328,9 @@ if(DOXYGEN_FOUND)
 	)
 endif()
 
-if(BUILD_TESTING)
+if(UPNP_ENABLE_TESTING)
 	enable_testing()
+	enable_language(CXX)
 	find_package(GTest CONFIG)
 
 	if(GTest_FOUND)
