@@ -143,7 +143,8 @@ TEST_F(Issue195TestSuite, GetIfInfo_clears_stale_IPv6_when_interface_has_none)
 }
 
 // regression: issue #247
-// UpnpGetIfInfo must not modify gIF_NAME when it returns UPNP_E_INVALID_INTERFACE.
+// UpnpGetIfInfo must not modify gIF_NAME when it returns
+// UPNP_E_INVALID_INTERFACE.
 //
 // Root cause: the Unix implementation writes IfName into gIF_NAME before the
 // getifaddrs loop verifies the interface exists. When the lookup fails the
@@ -178,14 +179,16 @@ protected:
 };
 
 // regression: issue #247
-TEST_F(Issue247TestSuite, GetIfInfo_does_not_corrupt_gIF_NAME_on_invalid_interface)
+TEST_F(Issue247TestSuite,
+	GetIfInfo_does_not_corrupt_gIF_NAME_on_invalid_interface)
 {
 	char *github_action = std::getenv("GITHUB_ACTIONS");
 	if (github_action) {
 		GTEST_SKIP() << "due to issues with googlemock";
 	}
 
-	// System has one valid interface (eth0), but caller passes a typo ("ethO")
+	// System has one valid interface (eth0), but caller passes a typo
+	// ("ethO")
 	struct ifaddrs *ifaddr = nullptr;
 	CIfaddr4 ifaddr4Obj;
 	ifaddr4Obj.set("eth0", "192.168.77.48/22");
@@ -202,11 +205,160 @@ TEST_F(Issue247TestSuite, GetIfInfo_does_not_corrupt_gIF_NAME_on_invalid_interfa
 	// Before fix: gIF_NAME == "ethO" (written before validation)
 	// After fix:  gIF_NAME == "" (not modified on failure)
 	EXPECT_STREQ(gIF_NAME, "")
-		<< "regression issue #247: UpnpGetIfInfo must not modify gIF_NAME "
-		   "when the interface lookup fails. The invalid name was written "
+		<< "regression issue #247: UpnpGetIfInfo must not modify "
+		   "gIF_NAME "
+		   "when the interface lookup fails. The invalid name was "
+		   "written "
 		   "to gIF_NAME before validation, leaving the library in an "
-		   "inconsistent state even though UPNP_E_INVALID_INTERFACE was "
+		   "inconsistent state even though UPNP_E_INVALID_INTERFACE "
+		   "was "
 		   "returned.";
+}
+
+// regression: issue #598
+// IN6_IS_ADDR_GLOBAL must correctly accept all 2000::/3 addresses.
+//
+// Root cause: the macro used bitmask 0x70000000 instead of 0xe0000000,
+// checking bits 6,5,4 instead of the top 3 bits (7,6,5) of the first byte.
+// This caused a000::/4 to be falsely classified as GUA and 3000::/4 to be
+// incorrectly excluded from GUA.
+//
+// Fix: change the bitmask from 0x70000000 to 0xe0000000.
+
+class Issue598TestSuite : public ::testing::Test
+{
+protected:
+	MockGetifaddrs mockGetifaddrsObj;
+	MockFreeifaddrs mockFreeifaddrObj;
+	MockIf_nametoindex mockIf_nametoindexObj;
+
+	/* Two-entry chain: link-local first, address-under-test second.
+	 * gIF_IPV6_ULA_GUA is only written when the interface also has a
+	 * link-local address (UpnpGetIfInfo gates the write on v6_addr being
+	 * non-unspecified), so both entries are needed to exercise the GUA
+	 * classification path on a realistic interface. */
+	struct sockaddr_in6 addr6_ll{}, netmask6_ll{};
+	struct ifaddrs ifaddr6_ll{};
+	struct sockaddr_in6 addr6_ut{}, netmask6_ut{};
+	struct ifaddrs ifaddr6_ut{};
+
+	Issue598TestSuite()
+	{
+		ptrMockGetifaddrsObj = &mockGetifaddrsObj;
+		ptrMockFreeifaddrObj = &mockFreeifaddrObj;
+		ptrMockIf_nametoindexObj = &mockIf_nametoindexObj;
+	}
+
+	struct ifaddrs *makeIfaddr6Pair(
+		const char *ifname, const char *addr_str)
+	{
+		memset(&addr6_ll, 0, sizeof(addr6_ll));
+		memset(&netmask6_ll, 0, sizeof(netmask6_ll));
+		memset(&ifaddr6_ll, 0, sizeof(ifaddr6_ll));
+		addr6_ll.sin6_family = AF_INET6;
+		inet_pton(AF_INET6, "fe80::1", &addr6_ll.sin6_addr);
+		netmask6_ll.sin6_family = AF_INET6;
+		memset(&netmask6_ll.sin6_addr, 0xff, 8);
+		ifaddr6_ll.ifa_name = const_cast<char *>(ifname);
+		ifaddr6_ll.ifa_flags = IFF_UP | IFF_MULTICAST;
+		ifaddr6_ll.ifa_addr =
+			reinterpret_cast<struct sockaddr *>(&addr6_ll);
+		ifaddr6_ll.ifa_netmask =
+			reinterpret_cast<struct sockaddr *>(&netmask6_ll);
+		ifaddr6_ll.ifa_next = &ifaddr6_ut;
+
+		memset(&addr6_ut, 0, sizeof(addr6_ut));
+		memset(&netmask6_ut, 0, sizeof(netmask6_ut));
+		memset(&ifaddr6_ut, 0, sizeof(ifaddr6_ut));
+		addr6_ut.sin6_family = AF_INET6;
+		inet_pton(AF_INET6, addr_str, &addr6_ut.sin6_addr);
+		netmask6_ut.sin6_family = AF_INET6;
+		memset(&netmask6_ut.sin6_addr, 0xff, 8);
+		ifaddr6_ut.ifa_name = const_cast<char *>(ifname);
+		ifaddr6_ut.ifa_flags = IFF_UP | IFF_MULTICAST;
+		ifaddr6_ut.ifa_addr =
+			reinterpret_cast<struct sockaddr *>(&addr6_ut);
+		ifaddr6_ut.ifa_netmask =
+			reinterpret_cast<struct sockaddr *>(&netmask6_ut);
+		ifaddr6_ut.ifa_next = nullptr;
+
+		return &ifaddr6_ll;
+	}
+
+	void SetUp() override
+	{
+		gIF_IPV6_ULA_GUA[0] = '\0';
+		gIF_IPV6_ULA_GUA_PREFIX_LENGTH = 0;
+		gIF_IPV6[0] = '\0';
+	}
+
+	void TearDown() override
+	{
+		gIF_IPV6_ULA_GUA[0] = '\0';
+		gIF_IPV6[0] = '\0';
+		ptrMockGetifaddrsObj = nullptr;
+		ptrMockFreeifaddrObj = nullptr;
+		ptrMockIf_nametoindexObj = nullptr;
+	}
+};
+
+// regression: issue #598
+// 3000::/4 is within 2000::/3 GUA space and must be stored in gIF_IPV6_ULA_GUA.
+// Before fix: 0x30 & 0x70 == 0x30 != 0x20, so the GUA branch was never taken.
+TEST_F(Issue598TestSuite, GetIfInfo_stores_3000_prefix_as_GUA)
+{
+	char *github_action = std::getenv("GITHUB_ACTIONS");
+	if (github_action) {
+		GTEST_SKIP() << "due to issues with googlemock";
+	}
+
+	struct ifaddrs *ifaddr = makeIfaddr6Pair("eth0", "3000::1");
+
+	EXPECT_CALL(mockGetifaddrsObj, getifaddrs(_))
+		.WillOnce(DoAll(SetArgPointee<0>(ifaddr), Return(0)));
+	EXPECT_CALL(mockFreeifaddrObj, freeifaddrs(ifaddr)).Times(1);
+	EXPECT_CALL(mockIf_nametoindexObj, if_nametoindex(_))
+		.WillOnce(Return(2));
+
+	int rc = UpnpGetIfInfo("eth0");
+	EXPECT_EQ(rc, UPNP_E_SUCCESS);
+
+	// Before fix: gIF_IPV6_ULA_GUA == "" (3000::/4 incorrectly excluded)
+	// After fix:  gIF_IPV6_ULA_GUA == "3000::1"
+	EXPECT_STREQ(gIF_IPV6_ULA_GUA, "3000::1")
+		<< "regression issue #598: 3000::1 is in 2000::/3 GUA space "
+		   "but "
+		   "was excluded by bitmask 0x70000000 which checks the wrong "
+		   "bits.";
+}
+
+// regression: issue #598
+// a000::/4 is NOT in 2000::/3 GUA space and must not be stored as GUA.
+// Before fix: 0xa0 & 0x70 == 0x20, so the address was a false positive.
+TEST_F(Issue598TestSuite, GetIfInfo_does_not_store_a000_prefix_as_GUA)
+{
+	char *github_action = std::getenv("GITHUB_ACTIONS");
+	if (github_action) {
+		GTEST_SKIP() << "due to issues with googlemock";
+	}
+
+	struct ifaddrs *ifaddr = makeIfaddr6Pair("eth0", "a000::1");
+
+	EXPECT_CALL(mockGetifaddrsObj, getifaddrs(_))
+		.WillOnce(DoAll(SetArgPointee<0>(ifaddr), Return(0)));
+	EXPECT_CALL(mockFreeifaddrObj, freeifaddrs(ifaddr)).Times(1);
+	EXPECT_CALL(mockIf_nametoindexObj, if_nametoindex(_))
+		.WillOnce(Return(2));
+
+	int rc = UpnpGetIfInfo("eth0");
+	EXPECT_EQ(rc, UPNP_E_SUCCESS);
+
+	// Before fix: gIF_IPV6_ULA_GUA == "a000::1" (false positive)
+	// After fix:  gIF_IPV6_ULA_GUA == "" (correctly not GUA)
+	EXPECT_STREQ(gIF_IPV6_ULA_GUA, "")
+		<< "regression issue #598: a000::1 is NOT in 2000::/3 GUA "
+		   "space "
+		   "but was falsely accepted by bitmask 0x70000000.";
 }
 
 int main(int argc, char **argv)
