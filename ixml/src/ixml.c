@@ -83,8 +83,21 @@ static void copy_with_escape(
 	}
 }
 
+/*! \brief Emit the closing tag for an element node. */
+static void ixmlPrintCloseTag(IXML_Node *node, ixml_membuf *buf)
+{
+	IXML_Node *sib = node->nextSibling;
+
+	ixml_membuf_append_str(buf, "</");
+	ixml_membuf_append_str(buf, ixmlNode_getNodeName(node));
+	if (sib && ixmlNode_getNodeType(sib) == eTEXT_NODE)
+		ixml_membuf_append_str(buf, ">");
+	else
+		ixml_membuf_append_str(buf, ">\r\n");
+}
+
 /*!
- * \brief Recursive function to print all the node in a tree.
+ * \brief Iterative function to print all the nodes in a tree.
  * Internal to parser only.
  */
 static void ixmlPrintDomTreeRecursive(
@@ -93,91 +106,125 @@ static void ixmlPrintDomTreeRecursive(
 	/*! [in] \todo documentation. */
 	ixml_membuf *buf)
 {
-	const char *nodeName = NULL;
-	const char *nodeValue = NULL;
-	IXML_Node *child = NULL, *sibling = NULL;
+	IXML_Node *node;
+	IXML_Node *fence;
+	IXML_Node *next_child;
+	int ascending;
 
-	if (nodeptr) {
-		nodeName = (const char *)ixmlNode_getNodeName(nodeptr);
-		nodeValue = ixmlNode_getNodeValue(nodeptr);
+	if (!nodeptr)
+		return;
 
-		switch (ixmlNode_getNodeType(nodeptr)) {
+	/* Attribute chains traverse nextSibling only — handle iteratively. */
+	if (nodeptr->nodeType == eATTRIBUTE_NODE) {
+		IXML_Node *attr = nodeptr;
+		while (attr) {
+			ixml_membuf_append_str(buf, ixmlNode_getNodeName(attr));
+			ixml_membuf_append_str(buf, "=\"");
+			copy_with_escape(buf, ixmlNode_getNodeValue(attr));
+			ixml_membuf_append_str(buf, "\"");
+			if (attr->nextSibling)
+				ixml_membuf_append_str(buf, " ");
+			attr = attr->nextSibling;
+		}
+		return;
+	}
+
+	fence = nodeptr->parentNode;
+	node = nodeptr;
+	ascending = 0;
+
+	while (node && node != fence) {
+		if (ascending) {
+			/* Returning from a child subtree: emit closing tag. */
+			if (ixmlNode_getNodeType(node) == eELEMENT_NODE)
+				ixmlPrintCloseTag(node, buf);
+			if (node->nextSibling) {
+				node = node->nextSibling;
+				ascending = 0;
+			} else {
+				node = node->parentNode;
+			}
+			continue;
+		}
+
+		/* First visit (descending). */
+		next_child = NULL;
+
+		switch (ixmlNode_getNodeType(node)) {
 		case eTEXT_NODE:
-			copy_with_escape(buf, nodeValue);
+			copy_with_escape(buf, ixmlNode_getNodeValue(node));
 			break;
 
 		case eCDATA_SECTION_NODE:
 			ixml_membuf_append_str(buf, "<![CDATA[");
-			ixml_membuf_append_str(buf, nodeValue);
+			ixml_membuf_append_str(buf, ixmlNode_getNodeValue(node));
 			ixml_membuf_append_str(buf, "]]>");
 			break;
 
 		case ePROCESSING_INSTRUCTION_NODE:
 			ixml_membuf_append_str(buf, "<?");
-			ixml_membuf_append_str(buf, nodeName);
+			ixml_membuf_append_str(buf, ixmlNode_getNodeName(node));
 			ixml_membuf_append_str(buf, " ");
-			copy_with_escape(buf, nodeValue);
+			copy_with_escape(buf, ixmlNode_getNodeValue(node));
 			ixml_membuf_append_str(buf, "?>\n");
 			break;
 
 		case eDOCUMENT_NODE:
-			ixmlPrintDomTreeRecursive(
-				ixmlNode_getFirstChild(nodeptr), buf);
+			next_child = node->firstChild;
 			break;
 
-		case eATTRIBUTE_NODE:
-			ixml_membuf_append_str(buf, nodeName);
-			ixml_membuf_append_str(buf, "=\"");
-			copy_with_escape(buf, nodeValue);
-			ixml_membuf_append_str(buf, "\"");
-			if (nodeptr->nextSibling) {
-				ixml_membuf_append_str(buf, " ");
-				ixmlPrintDomTreeRecursive(
-					nodeptr->nextSibling, buf);
-			}
-			break;
+		case eELEMENT_NODE: {
+			IXML_Node *child;
+			IXML_Node *attr;
 
-		case eELEMENT_NODE:
 			ixml_membuf_append_str(buf, "<");
-			ixml_membuf_append_str(buf, nodeName);
-			if (nodeptr->firstAttr) {
+			ixml_membuf_append_str(buf, ixmlNode_getNodeName(node));
+			if (node->firstAttr) {
 				ixml_membuf_append_str(buf, " ");
-				ixmlPrintDomTreeRecursive(
-					nodeptr->firstAttr, buf);
+				for (attr = node->firstAttr; attr;
+					attr = attr->nextSibling) {
+					ixml_membuf_append_str(
+						buf, ixmlNode_getNodeName(attr));
+					ixml_membuf_append_str(buf, "=\"");
+					copy_with_escape(
+						buf,
+						ixmlNode_getNodeValue(attr));
+					ixml_membuf_append_str(buf, "\"");
+					if (attr->nextSibling)
+						ixml_membuf_append_str(buf, " ");
+				}
 			}
-			child = ixmlNode_getFirstChild(nodeptr);
+			child = ixmlNode_getFirstChild(node);
 			if (child &&
-				ixmlNode_getNodeType(child) == eELEMENT_NODE) {
+				ixmlNode_getNodeType(child) == eELEMENT_NODE)
 				ixml_membuf_append_str(buf, ">\r\n");
-			} else {
+			else
 				ixml_membuf_append_str(buf, ">");
-			}
-			/* output the children */
-			ixmlPrintDomTreeRecursive(
-				ixmlNode_getFirstChild(nodeptr), buf);
-
-			/* Done with children.  Output the end tag. */
-			ixml_membuf_append_str(buf, "</");
-			ixml_membuf_append_str(buf, nodeName);
-
-			sibling = ixmlNode_getNextSibling(nodeptr);
-			if (sibling &&
-				ixmlNode_getNodeType(sibling) == eTEXT_NODE) {
-				ixml_membuf_append_str(buf, ">");
+			if (child) {
+				next_child = child;
 			} else {
-				ixml_membuf_append_str(buf, ">\r\n");
+				/* Leaf element: close tag immediately. */
+				ixmlPrintCloseTag(node, buf);
 			}
-			ixmlPrintDomTreeRecursive(
-				ixmlNode_getNextSibling(nodeptr), buf);
 			break;
+		}
 
 		default:
 			IxmlPrintf(__FILE__,
 				__LINE__,
 				"ixmlPrintDomTreeRecursive",
 				"Warning, unknown node type %d\n",
-				(int)ixmlNode_getNodeType(nodeptr));
+				(int)ixmlNode_getNodeType(node));
 			break;
+		}
+
+		if (next_child) {
+			node = next_child;
+		} else if (node->nextSibling) {
+			node = node->nextSibling;
+		} else {
+			node = node->parentNode;
+			ascending = 1;
 		}
 	}
 }

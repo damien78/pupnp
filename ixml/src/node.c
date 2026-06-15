@@ -418,22 +418,28 @@ static int ixmlNode_isAncestor(
 	/*! [in] The \b Node to check for an ancestor. */
 	IXML_Node *toFind)
 {
-	int found = 0;
+	IXML_Node *fence;
+	IXML_Node *node;
 
-	if (ancestorNode && toFind) {
-		if (toFind->parentNode == ancestorNode) {
+	if (!ancestorNode || !toFind)
+		return 0;
+
+	fence = ancestorNode->parentNode;
+	node = ancestorNode;
+	while (node) {
+		if (toFind->parentNode == node)
 			return 1;
+		if (node->firstChild) {
+			node = node->firstChild;
 		} else {
-			found = ixmlNode_isAncestor(
-				ancestorNode->firstChild, toFind);
-			if (found == 0) {
-				found = ixmlNode_isAncestor(
-					ancestorNode->nextSibling, toFind);
-			}
+			while (node && node != fence && !node->nextSibling)
+				node = node->parentNode;
+			if (!node || node == fence)
+				return 0;
+			node = node->nextSibling;
 		}
 	}
-
-	return found;
+	return 0;
 }
 
 /*!
@@ -920,24 +926,31 @@ static IXML_Attr *ixmlNode_cloneAttrDirect(
 	return newAttr;
 }
 
-/*!
- * \brief Sets siblings nodes parent to be the same as this node's.
- */
-static void ixmlNode_setSiblingNodesParent(
-	/*! [in] The node to operate on. */
-	IXML_Node *nodeptr)
-{
-	IXML_Node *parentNode = nodeptr->parentNode;
-	IXML_Node *nextptr = nodeptr->nextSibling;
 
-	while (nextptr) {
-		nextptr->parentNode = parentNode;
-		nextptr = nextptr->nextSibling;
+/*! \brief Shallow-clone a single node (no children, no siblings, no attrs). */
+static IXML_Node *ixmlNode_cloneSingleNode(IXML_Node *src)
+{
+	if (!src)
+		return NULL;
+	switch (src->nodeType) {
+	case eELEMENT_NODE:
+		return (IXML_Node *)ixmlNode_cloneElement((IXML_Element *)src);
+	case eATTRIBUTE_NODE:
+		return (IXML_Node *)ixmlNode_cloneAttr((IXML_Attr *)src);
+	case eTEXT_NODE:
+		return ixmlNode_cloneTextNode(src);
+	case eCDATA_SECTION_NODE:
+		return (IXML_Node *)ixmlNode_cloneCDATASect(
+			(IXML_CDATASection *)src);
+	case eDOCUMENT_NODE:
+		return (IXML_Node *)ixmlNode_newDoc();
+	default:
+		return NULL;
 	}
 }
 
 /*!
- * \brief Recursive function that clones a node tree of nodeptr.
+ * \brief Iterative function that clones a node tree of nodeptr.
  *
  * \returns The cloned node/tree.
  */
@@ -947,93 +960,81 @@ static IXML_Node *ixmlNode_cloneNodeTreeRecursive(
 	/*! [in] 1 if you want to clone the tree. */
 	int deep)
 {
-	IXML_Node *newNode = NULL;
-	IXML_Element *newElement = NULL;
-	IXML_Attr *newAttr = NULL;
-	IXML_CDATASection *newCDATA = NULL;
-	IXML_Document *newDoc = NULL;
-	IXML_Node *nextSib = NULL;
+	IXML_Node *fence;
+	IXML_Node *orig;
+	IXML_Node *cloneRoot;
+	IXML_Node *cloneCurr;
+	IXML_Node *cc;
 
-	if (nodeptr) {
-		switch (nodeptr->nodeType) {
-		case eELEMENT_NODE:
-			newElement =
-				ixmlNode_cloneElement((IXML_Element *)nodeptr);
-			if (!newElement) {
-				return NULL;
-			}
-			newElement->n.firstAttr =
-				ixmlNode_cloneNodeTreeRecursive(
-					nodeptr->firstAttr, deep);
-			if (deep) {
-				newElement->n.firstChild =
-					ixmlNode_cloneNodeTreeRecursive(
-						nodeptr->firstChild, deep);
-				if (newElement->n.firstChild) {
-					newElement->n.firstChild->parentNode =
-						(IXML_Node *)newElement;
-					ixmlNode_setSiblingNodesParent(
-						newElement->n.firstChild);
+	if (!nodeptr)
+		return NULL;
+
+	fence = nodeptr->parentNode;
+	orig = nodeptr;
+	cloneCurr = ixmlNode_cloneSingleNode(orig);
+	if (!cloneCurr)
+		return NULL;
+	cloneRoot = cloneCurr;
+
+	for (;;) {
+		/* Clone attribute list iteratively for element nodes. */
+		if (orig->nodeType == eELEMENT_NODE && orig->firstAttr) {
+			IXML_Node *srcAttr = orig->firstAttr;
+			IXML_Node *prevAttr = NULL;
+			while (srcAttr) {
+				IXML_Node *ac = (IXML_Node *)ixmlNode_cloneAttr(
+					(IXML_Attr *)srcAttr);
+				if (!ac)
+					goto error;
+				if (prevAttr) {
+					prevAttr->nextSibling = ac;
+					ac->prevSibling = prevAttr;
+				} else {
+					cloneCurr->firstAttr = ac;
 				}
-				nextSib = ixmlNode_cloneNodeTreeRecursive(
-					nodeptr->nextSibling, deep);
-				newElement->n.nextSibling = nextSib;
-				if (nextSib) {
-					nextSib->prevSibling =
-						(IXML_Node *)newElement;
-				}
+				prevAttr = ac;
+				srcAttr = srcAttr->nextSibling;
 			}
-			newNode = (IXML_Node *)newElement;
-			break;
-		case eATTRIBUTE_NODE:
-			newAttr = ixmlNode_cloneAttr((IXML_Attr *)nodeptr);
-			if (!newAttr)
-				return NULL;
-			nextSib = ixmlNode_cloneNodeTreeRecursive(
-				nodeptr->nextSibling, deep);
-			newAttr->n.nextSibling = nextSib;
-			if (nextSib) {
-				nextSib->prevSibling = (IXML_Node *)newAttr;
+		}
+
+		/* Descend into firstChild when doing a deep clone. */
+		if (deep && orig->firstChild &&
+			(orig->nodeType == eELEMENT_NODE ||
+				orig->nodeType == eDOCUMENT_NODE)) {
+			cc = ixmlNode_cloneSingleNode(orig->firstChild);
+			if (!cc)
+				goto error;
+			cc->parentNode = cloneCurr;
+			cloneCurr->firstChild = cc;
+			orig = orig->firstChild;
+			cloneCurr = cc;
+			continue;
+		}
+
+		/* No descent: advance to next sibling, ascending as needed. */
+		for (;;) {
+			if (orig->nextSibling) {
+				cc = ixmlNode_cloneSingleNode(orig->nextSibling);
+				if (!cc)
+					goto error;
+				cc->prevSibling = cloneCurr;
+				cc->parentNode = cloneCurr->parentNode;
+				cloneCurr->nextSibling = cc;
+				orig = orig->nextSibling;
+				cloneCurr = cc;
+				break;
 			}
-			newNode = (IXML_Node *)newAttr;
-			break;
-		case eTEXT_NODE:
-			newNode = ixmlNode_cloneTextNode(nodeptr);
-			break;
-		case eCDATA_SECTION_NODE:
-			newCDATA = ixmlNode_cloneCDATASect(
-				(IXML_CDATASection *)nodeptr);
-			newNode = (IXML_Node *)newCDATA;
-			break;
-		case eDOCUMENT_NODE:
-			newDoc = ixmlNode_newDoc();
-			if (!newDoc) {
-				return NULL;
-			}
-			newNode = (IXML_Node *)newDoc;
-			if (deep) {
-				newNode->firstChild =
-					ixmlNode_cloneNodeTreeRecursive(
-						nodeptr->firstChild, deep);
-				if (newNode->firstChild) {
-					newNode->firstChild->parentNode =
-						newNode;
-				}
-			}
-			break;
-		case eINVALID_NODE:
-		case eENTITY_REFERENCE_NODE:
-		case eENTITY_NODE:
-		case ePROCESSING_INSTRUCTION_NODE:
-		case eCOMMENT_NODE:
-		case eDOCUMENT_TYPE_NODE:
-		case eDOCUMENT_FRAGMENT_NODE:
-		case eNOTATION_NODE:
-			break;
+			/* No sibling: ascend. */
+			orig = orig->parentNode;
+			cloneCurr = cloneCurr->parentNode;
+			if (orig == fence)
+				return cloneRoot;
 		}
 	}
 
-	return newNode;
+error:
+	ixmlNode_free(cloneRoot);
+	return NULL;
 }
 
 /*!
@@ -1225,20 +1226,30 @@ static void ixmlNode_getElementsByTagNameRecursive(
 	/*! [out] The output \b NodeList. */
 	IXML_NodeList **list)
 {
+	IXML_Node *fence;
+	IXML_Node *node;
 	const char *name;
 
-	if (n) {
-		if (ixmlNode_getNodeType(n) == eELEMENT_NODE) {
-			name = ixmlNode_getNodeName(n);
+	if (!n)
+		return;
+	fence = n->parentNode;
+	node = n;
+	while (node) {
+		if (ixmlNode_getNodeType(node) == eELEMENT_NODE) {
+			name = ixmlNode_getNodeName(node);
 			if (strcmp(tagname, name) == 0 ||
-				strcmp(tagname, "*") == 0) {
-				ixmlNodeList_addToNodeList(list, n);
-			}
+				strcmp(tagname, "*") == 0)
+				ixmlNodeList_addToNodeList(list, node);
 		}
-		ixmlNode_getElementsByTagNameRecursive(
-			ixmlNode_getFirstChild(n), tagname, list);
-		ixmlNode_getElementsByTagNameRecursive(
-			ixmlNode_getNextSibling(n), tagname, list);
+		if (node->firstChild) {
+			node = node->firstChild;
+		} else {
+			while (node && node != fence && !node->nextSibling)
+				node = node->parentNode;
+			if (!node || node == fence)
+				return;
+			node = node->nextSibling;
+		}
 	}
 }
 
@@ -1272,32 +1283,35 @@ static void ixmlNode_getElementsByTagNameNSRecursive(
 	/*! [out] . */
 	IXML_NodeList **list)
 {
+	IXML_Node *fence;
+	IXML_Node *node;
 	const DOMString nsURI;
 	const DOMString name;
 
-	if (n) {
-		if (ixmlNode_getNodeType(n) == eELEMENT_NODE) {
-			name = ixmlNode_getLocalName(n);
-			nsURI = ixmlNode_getNamespaceURI(n);
-
+	if (!n)
+		return;
+	fence = n->parentNode;
+	node = n;
+	while (node) {
+		if (ixmlNode_getNodeType(node) == eELEMENT_NODE) {
+			name = ixmlNode_getLocalName(node);
+			nsURI = ixmlNode_getNamespaceURI(node);
 			if (name && nsURI &&
 				(strcmp(namespaceURI, nsURI) == 0 ||
 					strcmp(namespaceURI, "*") == 0) &&
 				(strcmp(name, localName) == 0 ||
-					strcmp(localName, "*") == 0)) {
-				ixmlNodeList_addToNodeList(list, n);
-			}
+					strcmp(localName, "*") == 0))
+				ixmlNodeList_addToNodeList(list, node);
 		}
-		ixmlNode_getElementsByTagNameNSRecursive(
-			ixmlNode_getFirstChild(n),
-			namespaceURI,
-			localName,
-			list);
-		ixmlNode_getElementsByTagNameNSRecursive(
-			ixmlNode_getNextSibling(n),
-			namespaceURI,
-			localName,
-			list);
+		if (node->firstChild) {
+			node = node->firstChild;
+		} else {
+			while (node && node != fence && !node->nextSibling)
+				node = node->parentNode;
+			if (!node || node == fence)
+				return;
+			node = node->nextSibling;
+		}
 	}
 }
 
