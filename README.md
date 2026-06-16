@@ -5,7 +5,7 @@
 
 | branch         | status                                                                                              |
 | -------------- | --------------------------------------------------------------------------------------------------- |
-| main  (1.20.x) | ![main](https://github.com/pupnp/pupnp/actions/workflows/ccpp.yml/badge.svg?branch=main)            |
+| main  (2.0.x)  | ![main](https://github.com/pupnp/pupnp/actions/workflows/ccpp.yml/badge.svg?branch=main)            |
 | branch-1.18.x  | ![1.18.x](https://github.com/pupnp/pupnp/actions/workflows/ccpp.yml/badge.svg?branch=branch-1.18.x) |
 | branch-1.14.x  | ![1.14.x](https://github.com/pupnp/pupnp/actions/workflows/ccpp.yml/badge.svg?branch=branch-1.14.x) |
 | branch-1.12.x  | ![1.12.x](https://github.com/pupnp/pupnp/actions/workflows/ccpp.yml/badge.svg?branch=branch-1.12.x) |
@@ -125,6 +125,7 @@ The Portable SDK for UPnP&trade; Devices is distributed under the BSD (Berkeley 
 
 | Release Number | Date       | History                                  |
 | -------------- | ---------- | ---------------------------------------- |
+| 2.0.0          | 2026-06-16 | [Portable UPnP SDK][Portable UPnP SDK]   |
 | 1.18.5         | 2026-04-22 | [Portable UPnP SDK][Portable UPnP SDK]   |
 | 1.18.4         | 2026-03-27 | [Portable UPnP SDK][Portable UPnP SDK]   |
 | 1.18.3         | 2026-03-16 | [Portable UPnP SDK][Portable UPnP SDK]   |

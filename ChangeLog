@@ -1,16 +1,55 @@
 *******************************************************************************
-Version 1.20.0
+Version 2.0.0
 *******************************************************************************
 
+- Issue #365: Remove UpnpPrintf from public API (breaking API change).
+- GHSA-25cx-xv8x-j247: Convert recursive ixml DOM traversal functions to
+  iterative to prevent stack overflow on deeply nested XML documents (CWE-674).
+  Fixed: ixmlPrintDomTreeRecursive, ixmlNode_getElementsByTagNameRecursive,
+  ixmlNode_getElementsByTagNameNSRecursive, ixmlNode_cloneNodeTreeRecursive,
+  ixmlNode_isAncestor.
+- ssdp_ctrlpt.c: Replace unsafe strcpy/strcat with bounds-checked snprintf
+  in CreateClientRequestPacket to eliminate potential buffer overflow.
+- Issue #169: Add UpnpGetSslCtx() and UpnpSetSslCtx() to SSL API.
 - Issue #178: ThreadPool: print backtrace on first "too many jobs" via new
-  UPNP_ENABLE_BACKTRACE CMake option / --enable-backtrace configure switch
-  (enabled by default; requires execinfo.h).
-- Issue #178: raise DEFAULT_MAX_JOBS_TOTAL from 100 to 1000 to better handle
+  UPNP_ENABLE_BACKTRACE CMake option (enabled by default; requires execinfo.h).
+- Issue #178: Raise DEFAULT_MAX_JOBS_TOTAL from 100 to 1000 to better handle
   networks with many UPnP devices.
 - Issue #410: Add UpnpGetSsdpReqPort4() and UpnpGetSsdpReqPort6() to query
   the OS-assigned source port used for SSDP M-SEARCH requests.
-
-
+- CMake: Add find_package(UPNP COMPONENTS Shared/Static) and
+  find_package(IXML COMPONENTS Shared/Static) support.
+- Add UPNP_ENABLE_DEBUG CMake option; expose UPNP_HAVE_DEBUG in upnpconfig.h.
+- Issue #423: Replace select()/FD_SET() with poll() to fix FD_SET overflow
+  on fd >= FD_SETSIZE (Windows keeps select()).
+- Issue #435: GENA: cap MaxSubscriptions per service to prevent subscription
+  flooding; reject oversized Callback headers to prevent memory exhaustion.
+- Issue #434: Miniserver: disable Nagle algorithm on accepted TCP sockets.
+- Issue #395: Remove MSG_DONTROUTE from send() in sock_read_write().
+- Issue #394: Reject oversized HTTP POST body before buffering.
+- Issue #379: Accept RFC 1918 cross-subnet delivery URLs in GENA subscriptions.
+- Issue #365: Export UpnpCloseLog and UpnpGetDebugFile from shared library.
+- Issue #347: Normalize HTTP response header names to title-case.
+- Issue #325: Make gMServState _Atomic to eliminate pre-existing data races.
+- Issue #272: Fix logging to stderr without user setup.
+- Issue #247: Prevent gIF_NAME corruption on failed UpnpGetIfInfo.
+- Issue #227: Bind SSDP sockets to selected interface address.
+- Issue #195: Make IPv6 bind failure non-fatal when IPv4 is available;
+  clear stale gIF_IPV6 in UpnpGetIfInfo before scanning.
+- Issue #153: Reset gAliasDoc after last alias_release to prevent use-after-free.
+- PR #598: Fix IN6_IS_ADDR_GLOBAL macro to accept all 2000::/3 addresses.
+- Fix: Move web_server_destroy() after ThreadPoolShutdown() in UpnpFinish().
+- Fix: Miniserver: fix socket and connection leak on sock_init_with_ip failure.
+- Fix: upnpdebug.c: Fix UB and null-pointer dereference in UpnpInitLog error path.
+- Fix: Prevent dangling pointer in CIfaddr4::set() by storing ifname as member.
+- Fix: Allow explicitly-named non-multicast interfaces in UpnpGetIfInfo.
+- Fix: ixmlparser.c: Fix typos and rename LETTERTABLESIZE to LETTER_TABLE_SIZE.
+- Fix: Guard GCC diagnostic pragmas with #if defined(__GNUC__).
+- Fix: Cast bufsize and byte_left to int for SSL_read/SSL_write calls.
+- Fix: Use INET6_ADDRSTRLEN for host buffer in getNumericHostRedirection.
+- Fix: Preserve UPNP_E_INTERNAL_ERROR for initial buffer check in miniserver.
+- Fix: Use bounded strlcpy/snprintf in tv_device.c sample.
+- ThreadPool: Suppress repeated "too many jobs" log spam.
 
 *******************************************************************************
 Version 1.18.5
