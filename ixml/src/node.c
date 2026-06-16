@@ -926,7 +926,6 @@ static IXML_Attr *ixmlNode_cloneAttrDirect(
 	return newAttr;
 }
 
-
 /*! \brief Shallow-clone a single node (no children, no siblings, no attrs). */
 static IXML_Node *ixmlNode_cloneSingleNode(IXML_Node *src)
 {
@@ -1014,7 +1013,8 @@ static IXML_Node *ixmlNode_cloneNodeTreeRecursive(
 		/* No descent: advance to next sibling, ascending as needed. */
 		for (;;) {
 			if (orig->nextSibling) {
-				cc = ixmlNode_cloneSingleNode(orig->nextSibling);
+				cc = ixmlNode_cloneSingleNode(
+					orig->nextSibling);
 				if (!cc)
 					goto error;
 				cc->prevSibling = cloneCurr;

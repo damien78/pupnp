@@ -157,7 +157,8 @@ static void ixmlPrintDomTreeRecursive(
 
 		case eCDATA_SECTION_NODE:
 			ixml_membuf_append_str(buf, "<![CDATA[");
-			ixml_membuf_append_str(buf, ixmlNode_getNodeValue(node));
+			ixml_membuf_append_str(
+				buf, ixmlNode_getNodeValue(node));
 			ixml_membuf_append_str(buf, "]]>");
 			break;
 
@@ -183,15 +184,15 @@ static void ixmlPrintDomTreeRecursive(
 				ixml_membuf_append_str(buf, " ");
 				for (attr = node->firstAttr; attr;
 					attr = attr->nextSibling) {
-					ixml_membuf_append_str(
-						buf, ixmlNode_getNodeName(attr));
+					ixml_membuf_append_str(buf,
+						ixmlNode_getNodeName(attr));
 					ixml_membuf_append_str(buf, "=\"");
-					copy_with_escape(
-						buf,
+					copy_with_escape(buf,
 						ixmlNode_getNodeValue(attr));
 					ixml_membuf_append_str(buf, "\"");
 					if (attr->nextSibling)
-						ixml_membuf_append_str(buf, " ");
+						ixml_membuf_append_str(
+							buf, " ");
 				}
 			}
 			child = ixmlNode_getFirstChild(node);

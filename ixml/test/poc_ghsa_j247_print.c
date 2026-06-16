@@ -40,7 +40,8 @@ int main(void)
 	if (rc != IXML_SUCCESS || !doc)
 		return 1;
 
-	/* ixmlPrintDocument calls ixmlPrintDomTree -> ixmlPrintDomTreeRecursive */
+	/* ixmlPrintDocument calls ixmlPrintDomTree -> ixmlPrintDomTreeRecursive
+	 */
 	DOMString s = ixmlPrintDocument(doc);
 	ixmlFreeDOMString(s);
 

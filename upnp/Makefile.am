@@ -84,6 +84,7 @@ libupnp_la_SOURCES = \
 	src/inc/sysdep.h \
 	src/inc/unixutil.h \
 	src/inc/upnpapi.h \
+	src/inc/upnpdebug_internal.h \
 	src/inc/uri.h \
 	src/inc/urlconfig.h \
 	src/inc/upnputil.h \
@@ -213,6 +214,21 @@ TESTS += test/check_symbol_visibility.sh
 EXTRA_DIST = \
 	m4/libupnp.m4 \
 	src/win_dll.c \
-	test/check_symbol_visibility.sh
+	test/check_symbol_visibility.sh \
+	test/poc_gh_153.c \
+	test/poc_gh_325.c \
+	test/test_connect_high_fd.c \
+	test/test_gena_subscribe_dos.c \
+	test/test_gena_subscribe_pressure.c \
+	test/test_http_headers.c \
+	test/test_sock_io.c \
+	test/test_ssdp_bind_specific.c \
+	test/test_ssdp_req_port.c \
+	test/test_threadpool_overflow.c \
+	test/add_subdirectory.cmake.in \
+	test/add_subdirectory_exclude.cmake.in \
+	test/find_package_no_components.cmake.in \
+	test/find_package_test.cmake.in \
+	test/find_package_wrong_components.cmake.in
 
 CLEANFILES = libupnp_err.log libupnp_info.log

@@ -38,7 +38,8 @@ int main(void)
 		return 1;
 
 	/* No match forces a full traversal of the 10 000-deep tree. */
-	IXML_NodeList *list = ixmlDocument_getElementsByTagName(doc, "nonexistent");
+	IXML_NodeList *list =
+		ixmlDocument_getElementsByTagName(doc, "nonexistent");
 	ixmlNodeList_free(list);
 
 	ixmlDocument_free(doc);

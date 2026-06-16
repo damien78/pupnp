@@ -67,7 +67,22 @@ poc_gh_506_SOURCES      = test/poc_gh_506.c
 
 poc_gh_517_SOURCES      = test/poc_gh_517.cpp
 
-EXTRA_DIST		= test/test_document.sh test/testdata
+EXTRA_DIST		= \
+			test/test_document.sh \
+			test/testdata \
+			test/poc_gh_249.c \
+			test/poc_ghsa_hcx4.c \
+			test/poc_ghsa_hcx4_utf8.c \
+			test/poc_ghsa_j247_clonenode.c \
+			test/poc_ghsa_j247_getbytagname.c \
+			test/poc_ghsa_j247_getbytagnamens.c \
+			test/poc_ghsa_j247_isancestor.c \
+			test/poc_ghsa_j247_print.c \
+			test/add_subdirectory.cmake.in \
+			test/add_subdirectory_exclude.cmake.in \
+			test/find_package_no_components.cmake.in \
+			test/find_package_test.cmake.in \
+			test/find_package_wrong_components.cmake.in
 
 dist-hook:
 	rm -rf `find $(distdir)/test/testdata/ -type f \! -name '*ml' -print`
