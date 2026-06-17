@@ -2134,17 +2134,18 @@ parse_status_t parser_append(
  ************************************************************************/
 int raw_to_int(memptr *raw_value, int base)
 {
-	long num;
+	long long num;
 	char *end_ptr;
 
 	if (raw_value->length == (size_t)0)
 		return -1;
 	errno = 0;
-	num = strtol(raw_value->buf, &end_ptr, base);
-	if ((num < 0)
+	num = strtoll(raw_value->buf, &end_ptr, base);
+	if ((num < 0) ||
+		(num > INT_MAX)
 		/* all and only those chars in token should be used for num */
 		|| (end_ptr != raw_value->buf + raw_value->length) ||
-		((num == LONG_MIN || num == LONG_MAX) && (errno == ERANGE))) {
+		((num == LLONG_MAX) && (errno == ERANGE))) {
 		return -1;
 	}
 	return (int)num;
