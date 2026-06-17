@@ -405,9 +405,11 @@ int http_RecvMessage(SOCKINFO *info,
 					parser->msg.msg.buf);
 				print_http_headers(&parser->msg);
 				if (g_maxContentLength > 0 &&
-					parser->content_length >
-						(unsigned int)
-							g_maxContentLength) {
+					(parser->content_length >
+							(unsigned int)
+								g_maxContentLength ||
+						parser->msg.entity.length >
+							g_maxContentLength)) {
 					*http_error_code =
 						HTTP_REQ_ENTITY_TOO_LARGE;
 					line = __LINE__;
@@ -437,10 +439,12 @@ int http_RecvMessage(SOCKINFO *info,
 				 * exceeds the limit, before the body is
 				 * buffered. */
 				if (g_maxContentLength > 0 &&
-					parser->content_length > 0 &&
-					parser->content_length >
-						(unsigned int)
-							g_maxContentLength) {
+					((parser->content_length > 0 &&
+						 parser->content_length >
+							 (unsigned int)
+								 g_maxContentLength) ||
+						parser->msg.entity.length >
+							g_maxContentLength)) {
 					*http_error_code =
 						HTTP_REQ_ENTITY_TOO_LARGE;
 					line = __LINE__;
