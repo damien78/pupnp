@@ -2,7 +2,12 @@
 Version 2.0.1
 *******************************************************************************
 
-
+- Issue #227: Fix SSDP regression introduced by PR #579: revert SSDP socket
+  bind address from unicast interface address back to INADDR_ANY.  Linux only
+  delivers multicast datagrams to sockets bound to INADDR_ANY; binding to a
+  unicast address silently broke all M-SEARCH reception (device discovery).
+  IP_ADD_MEMBERSHIP with imr_interface already scopes multicast membership to
+  the correct interface, so the unicast bind was unnecessary.
 
 *******************************************************************************
 Version 2.0.0
