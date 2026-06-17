@@ -508,6 +508,16 @@ static int ixmlNode_allowChildren(
 	return 1;
 }
 
+/* NULL-safe strcmp: two NULLs are equal; NULL vs non-NULL is not equal. */
+static int safe_strcmp(const char *a, const char *b)
+{
+	if (a == b)
+		return 0;
+	if (!a || !b)
+		return 1;
+	return strcmp(a, b);
+}
+
 /*!
  * \brief Compare two nodes to see whether they are the same node.
  * Parent, sibling and children node are ignored.
@@ -527,11 +537,11 @@ int ixmlNode_compare(
 	/* clang-format off */
 	return srcNode == destNode ||
 	       (strcmp(srcNode->nodeName, destNode->nodeName) == 0 &&
-		strcmp(srcNode->nodeValue, destNode->nodeValue) == 0 &&
+		safe_strcmp(srcNode->nodeValue, destNode->nodeValue) == 0 &&
 		srcNode->nodeType == destNode->nodeType &&
-		strcmp(srcNode->namespaceURI, destNode->namespaceURI) == 0 &&
-		strcmp(srcNode->prefix, destNode->prefix) == 0 &&
-		strcmp(srcNode->localName, destNode->localName) == 0);
+		safe_strcmp(srcNode->namespaceURI, destNode->namespaceURI) == 0 &&
+		safe_strcmp(srcNode->prefix, destNode->prefix) == 0 &&
+		safe_strcmp(srcNode->localName, destNode->localName) == 0);
 	/* clang-format on */
 }
 
