@@ -13,6 +13,7 @@ ixml_add_unit_test(test-ixml-poc-ghsa-j247-getbytagname poc_ghsa_j247_getbytagna
 ixml_add_unit_test(test-ixml-poc-ghsa-j247-getbytagnamens poc_ghsa_j247_getbytagnamens.c "")
 ixml_add_unit_test(test-ixml-poc-ghsa-j247-clonenode poc_ghsa_j247_clonenode.c "")
 ixml_add_unit_test(test-ixml-poc-ghsa-j247-isancestor poc_ghsa_j247_isancestor.c "")
+ixml_add_unit_test(test-ixml-poc-ghsa-q54q poc_ghsa_q54q.c "")
 
 if(NOT IXML_ENABLE_TESTING_INTEGRATION)
 	return()
