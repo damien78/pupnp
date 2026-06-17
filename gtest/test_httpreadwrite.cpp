@@ -116,6 +116,98 @@ TEST_F(Issue394TestSuite, AcceptsBodyAtExactLimit)
 	EXPECT_EQ(ret, UPNP_E_SUCCESS);
 }
 
+// regression: GHSA-gcj7-j9f7-q84c
+// Transfer-Encoding: chunked bypasses g_maxContentLength: content_length is
+// never set for chunked transfers, so the existing limit checks are skipped
+// while the decoded entity accumulates past the configured maximum.
+class GhsaGcj7TestSuite : public ::testing::Test
+{
+protected:
+	int sv[2]{-1, -1};
+	size_t saved_limit_{};
+
+	void SetUp() override
+	{
+		saved_limit_ = g_maxContentLength;
+		g_maxContentLength = 1024; /* 1 KB limit */
+		ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, sv), 0);
+	}
+
+	void TearDown() override
+	{
+		g_maxContentLength = saved_limit_;
+		if (sv[0] >= 0)
+			close(sv[0]);
+		if (sv[1] >= 0)
+			close(sv[1]);
+	}
+};
+
+// A chunked response body larger than g_maxContentLength must be rejected.
+TEST_F(GhsaGcj7TestSuite, ChunkedBodyExceedingLimitIsRejected)
+{
+	static const char hdr[] = "HTTP/1.1 200 OK\r\n"
+				   "Transfer-Encoding: chunked\r\n"
+				   "\r\n";
+
+	char chunk_data[2048];
+	memset(chunk_data, 'X', sizeof(chunk_data));
+
+	write(sv[1], hdr, sizeof(hdr) - 1);
+	write(sv[1], "800\r\n", 5); /* 0x800 = 2048 bytes */
+	write(sv[1], chunk_data, sizeof(chunk_data));
+	write(sv[1], "\r\n", 2);
+	write(sv[1], "0\r\n\r\n", 5); /* terminator */
+	close(sv[1]);
+	sv[1] = -1;
+
+	SOCKINFO info{};
+	info.socket = sv[0];
+
+	http_parser_t parser{};
+	int timeout = 5;
+	int http_err = 0;
+	int ret = http_RecvMessage(
+		&info, &parser, HTTPMETHOD_GET, &timeout, &http_err);
+
+	httpmsg_destroy(&parser.msg);
+
+	EXPECT_EQ(ret, UPNP_E_OUTOF_BOUNDS);
+	EXPECT_EQ(http_err, HTTP_REQ_ENTITY_TOO_LARGE);
+}
+
+// A chunked response body exactly at the limit must be accepted.
+TEST_F(GhsaGcj7TestSuite, ChunkedBodyAtExactLimitIsAccepted)
+{
+	static const char hdr[] = "HTTP/1.1 200 OK\r\n"
+				   "Transfer-Encoding: chunked\r\n"
+				   "\r\n";
+
+	char chunk_data[1024];
+	memset(chunk_data, 'X', sizeof(chunk_data));
+
+	write(sv[1], hdr, sizeof(hdr) - 1);
+	write(sv[1], "400\r\n", 5); /* 0x400 = 1024 bytes */
+	write(sv[1], chunk_data, sizeof(chunk_data));
+	write(sv[1], "\r\n", 2);
+	write(sv[1], "0\r\n\r\n", 5); /* terminator */
+	close(sv[1]);
+	sv[1] = -1;
+
+	SOCKINFO info{};
+	info.socket = sv[0];
+
+	http_parser_t parser{};
+	int timeout = 5;
+	int http_err = 0;
+	int ret = http_RecvMessage(
+		&info, &parser, HTTPMETHOD_GET, &timeout, &http_err);
+
+	httpmsg_destroy(&parser.msg);
+
+	EXPECT_EQ(ret, UPNP_E_SUCCESS);
+}
+
 int main(int argc, char **argv)
 {
 	::testing::InitGoogleTest(&argc, argv);
