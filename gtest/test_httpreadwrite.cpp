@@ -147,8 +147,8 @@ protected:
 TEST_F(GhsaGcj7TestSuite, ChunkedBodyExceedingLimitIsRejected)
 {
 	static const char hdr[] = "HTTP/1.1 200 OK\r\n"
-				   "Transfer-Encoding: chunked\r\n"
-				   "\r\n";
+				  "Transfer-Encoding: chunked\r\n"
+				  "\r\n";
 
 	char chunk_data[2048];
 	memset(chunk_data, 'X', sizeof(chunk_data));
@@ -180,8 +180,8 @@ TEST_F(GhsaGcj7TestSuite, ChunkedBodyExceedingLimitIsRejected)
 TEST_F(GhsaGcj7TestSuite, ChunkedBodyAtExactLimitIsAccepted)
 {
 	static const char hdr[] = "HTTP/1.1 200 OK\r\n"
-				   "Transfer-Encoding: chunked\r\n"
-				   "\r\n";
+				  "Transfer-Encoding: chunked\r\n"
+				  "\r\n";
 
 	char chunk_data[1024];
 	memset(chunk_data, 'X', sizeof(chunk_data));
@@ -202,6 +202,92 @@ TEST_F(GhsaGcj7TestSuite, ChunkedBodyAtExactLimitIsAccepted)
 	int http_err = 0;
 	int ret = http_RecvMessage(
 		&info, &parser, HTTPMETHOD_GET, &timeout, &http_err);
+
+	httpmsg_destroy(&parser.msg);
+
+	EXPECT_EQ(ret, UPNP_E_SUCCESS);
+}
+
+// regression: GHSA-g6c2-x4r9-352g
+// raw_to_int() casts strtol() (long, 64-bit on LP64) to int (32-bit),
+// silently truncating Content-Length values above INT_MAX.
+// Content-Length: 4294967301 (2^32+5) is stored as content_length=5,
+// causing the parser to accept a 5-byte body as if the declared length
+// were valid.
+class GhsaG6c2TestSuite : public ::testing::Test
+{
+protected:
+	int sv[2]{-1, -1};
+	size_t saved_limit_{};
+
+	void SetUp() override
+	{
+		saved_limit_ = g_maxContentLength;
+		g_maxContentLength = 1024; /* 1 KB limit */
+		ASSERT_EQ(socketpair(AF_UNIX, SOCK_STREAM, 0, sv), 0);
+	}
+
+	void TearDown() override
+	{
+		g_maxContentLength = saved_limit_;
+		if (sv[0] >= 0)
+			close(sv[0]);
+		if (sv[1] >= 0)
+			close(sv[1]);
+	}
+};
+
+// Content-Length: 4294967301 (2^32+5) must be rejected, not silently
+// truncated to 5 and accepted with a 5-byte body.
+TEST_F(GhsaG6c2TestSuite, TruncatedContentLengthIsRejected)
+{
+	/* 4294967301 = 2^32 + 5; (int) cast truncates to 5 */
+	static const char hdr[] = "NOTIFY /upnp/event HTTP/1.1\r\n"
+				  "Host: 127.0.0.1:49152\r\n"
+				  "Content-Length: 4294967301\r\n"
+				  "\r\n";
+
+	write(sv[1], hdr, sizeof(hdr) - 1);
+	write(sv[1], "HELLO", 5);
+	close(sv[1]);
+	sv[1] = -1;
+
+	SOCKINFO info{};
+	info.socket = sv[0];
+
+	http_parser_t parser{};
+	int timeout = 5;
+	int http_err = 0;
+	int ret = http_RecvMessage(
+		&info, &parser, HTTPMETHOD_UNKNOWN, &timeout, &http_err);
+
+	httpmsg_destroy(&parser.msg);
+
+	EXPECT_EQ(ret, UPNP_E_OUTOF_BOUNDS);
+	EXPECT_EQ(http_err, HTTP_REQ_ENTITY_TOO_LARGE);
+}
+
+// A request with a legitimate small Content-Length must still be accepted.
+TEST_F(GhsaG6c2TestSuite, ValidSmallContentLengthIsAccepted)
+{
+	static const char hdr[] = "NOTIFY /upnp/event HTTP/1.1\r\n"
+				  "Host: 127.0.0.1:49152\r\n"
+				  "Content-Length: 5\r\n"
+				  "\r\n";
+
+	write(sv[1], hdr, sizeof(hdr) - 1);
+	write(sv[1], "HELLO", 5);
+	close(sv[1]);
+	sv[1] = -1;
+
+	SOCKINFO info{};
+	info.socket = sv[0];
+
+	http_parser_t parser{};
+	int timeout = 5;
+	int http_err = 0;
+	int ret = http_RecvMessage(
+		&info, &parser, HTTPMETHOD_UNKNOWN, &timeout, &http_err);
 
 	httpmsg_destroy(&parser.msg);
 
