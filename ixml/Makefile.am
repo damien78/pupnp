@@ -78,6 +78,7 @@ EXTRA_DIST		= \
 			test/poc_ghsa_j247_getbytagnamens.c \
 			test/poc_ghsa_j247_isancestor.c \
 			test/poc_ghsa_j247_print.c \
+			test/poc_ghsa_q54q.c \
 			test/add_subdirectory.cmake.in \
 			test/add_subdirectory_exclude.cmake.in \
 			test/find_package_no_components.cmake.in \

@@ -34,6 +34,7 @@ EXTRA_DIST = \
 	gtest/tools/test_tools.cpp \
 	gtest/tools/tools.cpp \
 	gtest/test_UpnpHttpHeaderList.cpp \
+	gtest/test_httpreadwrite.cpp \
 	gtest/test_template.cpp \
 	gtest/test_upnpapi.cpp \
 	gtest/TODO \
