@@ -222,7 +222,7 @@ EXTRA_DIST = \
 	test/test_gena_subscribe_pressure.c \
 	test/test_http_headers.c \
 	test/test_sock_io.c \
-	test/test_ssdp_bind_specific.c \
+	test/test_ssdp_multicast_recv.c \
 	test/test_ssdp_req_port.c \
 	test/test_threadpool_overflow.c \
 	test/add_subdirectory.cmake.in \
