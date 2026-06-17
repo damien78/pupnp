@@ -2,7 +2,21 @@
 Version 2.0.2
 *******************************************************************************
 
-
+- GHSA-gcj7-j9f7-q84c: Enforce g_maxContentLength on chunked transfer-encoded
+  bodies. Transfer-Encoding: chunked leaves content_length at 0, bypassing the
+  existing size limit checks. The fix adds entity.length checks alongside the
+  content_length checks in http_RecvMessage() so chunked bodies are also
+  rejected when they exceed the configured maximum.
+- GHSA-q54q-vx78-v9rq: Fix NULL dereference in ixmlNode_compare(). The
+  function called strcmp() on nodeValue, namespaceURI, prefix, and localName
+  without NULL guards. Non-namespaced attributes have these fields as NULL
+  (zeroed by ixmlAttr_init), causing a crash when removeAttributeNode compared
+  two distinct attribute objects with the same name.
+- GHSA-g6c2-x4r9-352g: Fix Content-Length integer truncation in raw_to_int().
+  The function used strtol() (returns long, 64-bit on LP64) and cast the result
+  to int (32-bit), silently truncating Content-Length values above INT_MAX. A
+  value such as 4294967301 (2^32+5) was stored as 5, bypassing size limits.
+  Switched to strtoll() with an explicit INT_MAX bound check.
 
 *******************************************************************************
 Version 2.0.1
