@@ -49,6 +49,9 @@ int main(void)
 	ixmlElement_removeAttributeNode(el, lookup, &removed);
 
 	ixmlAttr_free(lookup);
+	if (removed) {
+		ixmlAttr_free(removed);
+	}
 	ixmlElement_free(el);
 	ixmlDocument_free(doc);
 	return 0;
