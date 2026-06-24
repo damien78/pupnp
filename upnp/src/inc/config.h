@@ -299,7 +299,7 @@
 /*!
  * \name MIN_SEARCH_TIME
  *
- * The {\tt MIN_SEARCH_TIME} is the minimumm time
+ * The {\tt MIN_SEARCH_TIME} is the minimum time
  * allowed for an SSDP search by a control point. Searching for less than
  * this time automatically results in a search for this amount.  The default
  * value is 2 seconds.

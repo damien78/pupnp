@@ -59,7 +59,7 @@ void soap_device_callback(
  * Function: SoapSendAction
  *
  * Parameters:
- *	IN char* action_url: device contrl URL
+ *	IN char* action_url: device control URL
  *	IN char *service_type: device service type
  *	IN IXML_Document *action_node: SOAP action node
  *	OUT IXML_Document **response_node: SOAP response node
@@ -81,7 +81,7 @@ int SoapSendAction(char *action_url,
  * Function: SoapSendActionEx
  *
  * Parameters:
- *	IN char* action_url: device contrl URL
+ *	IN char* action_url: device control URL
  *	IN char *service_type: device service type
  *	IN IXML_Document *Header: Soap header
  *	IN IXML_Document *action_node: SOAP action node (SOAP body)
